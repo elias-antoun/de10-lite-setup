@@ -146,6 +146,8 @@ board, the Control Panel and the System Builder are made by
 products. Redistributed here for coursework only; all rights remain with their
 owners.
 
+© 2026 Elias Antoun.
+
 ---
 
 <details>
