@@ -107,6 +107,29 @@
     overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
   }
 
+  /* ---------- Hero logo plate ---------- */
+  .hero-logos { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-top: 40px; }
+  .hero-logos-label {
+    font: 500 0.7rem/1 "JetBrains Mono", ui-monospace, monospace;
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--silk-muted);
+  }
+  /* The marks sit on white so their own navy stays legible against the hero and
+     survives dark mode -- recolouring someone else's trademark is not ours to do. */
+  .logo-plate {
+    display: inline-flex; align-items: center; gap: 24px;
+    background: #FFFFFF; border-radius: 10px; padding: 10px 18px;
+  }
+  .logo-plate a { display: block; line-height: 0; opacity: 0.92; transition: opacity 0.15s; }
+  .logo-plate a:hover { opacity: 1; }
+  .logo-plate img { display: block; width: auto; }
+  .logo-terasic { height: 22px; }
+  .logo-altera { height: 30px; }
+  @media (max-width: 460px) {
+    .logo-plate { gap: 18px; padding: 9px 14px; }
+    .logo-terasic { height: 19px; }
+    .logo-altera { height: 26px; }
+  }
+
   /* ---------- Sticky sub-nav ---------- */
   .subnav {
     position: sticky; top: 0; z-index: 20;
@@ -398,6 +421,18 @@
            named exactly DE10_Lite_Setup.zip, or change this href. -->
       <a class="download" href="https://github.com/elias-antoun/de10-lite-setup/releases/latest/download/DE10_Lite_Setup.zip">Download setup zip</a>
       <p class="download-note">The bin32 folder and the DE10-Lite tools. About 36&nbsp;MB.</p>
+
+      <div class="hero-logos">
+        <span class="hero-logos-label">Board and tools by</span>
+        <span class="logo-plate">
+          <a href="https://www.terasic.com.tw/" target="_blank" rel="noopener">
+            <img class="logo-terasic" src="img/logo-terasic.png" width="134" height="48" loading="lazy" decoding="async" alt="Terasic">
+          </a>
+          <a href="https://www.altera.com/" target="_blank" rel="noopener">
+            <img class="logo-altera" src="img/logo-altera.png" width="165" height="68" loading="lazy" decoding="async" alt="Altera, an Intel company">
+          </a>
+        </span>
+      </div>
   </div>
 </header>
 
