@@ -66,7 +66,8 @@ at `output_files\adder_top.sof`.
 
 ### 4. Program the board
 
-**Tools ▸ Programmer**, then:
+The [setup page](https://elias-antoun.github.io/de10-lite-setup/#lab) walks
+this through with a screenshot of every dialog. In short — **Tools ▸ Programmer**, then:
 
 1. **Hardware Setup…** → select `USB-Blaster [USB-0]` → **Close**. Mode: `JTAG`.
 2. If the file list is empty, **Add File…** → your `.sof`. Device reads

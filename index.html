@@ -258,6 +258,21 @@
   .syscfg-extra dt { font-weight: 700; }
   .syscfg-extra dd { margin: 0; color: var(--muted); }
 
+  /* ---------- Screenshots ---------- */
+  figure.shot { margin: 12px 0 4px; max-width: 540px; }
+  figure.shot a { display: block; border-radius: 6px; }
+  figure.shot img {
+    max-width: 100%; height: auto; display: block; background: #FFFFFF;
+    border: 1px solid var(--line); border-radius: 6px;
+  }
+  figure.shot a:hover img { border-color: var(--muted); }
+  figure.shot figcaption { margin-top: 7px; font-size: 0.85rem; color: var(--muted); }
+  ol.walk { margin: 0 0 14px; padding-left: 1.3em; }
+  ol.walk > li { margin-top: 22px; }
+  ol.walk > li:first-child { margin-top: 10px; }
+  ol.walk > li > p { margin: 0; }
+  .credit-line { font-size: 0.85rem; color: var(--muted); margin: 2px 0 14px; }
+
   /* ---------- Board reference ---------- */
   figure.board { margin: 0; }
   figure.board img {
@@ -507,6 +522,13 @@
           <h3>Check it works</h3>
           <p>Run the Control Panel:</p>
           <div class="path"><code>C:\DE10_Lite\Tools\DE10_Lite_ControlPanel\DE10_Lite_ControlPanel.exe</code><button class="copy" type="button" aria-label="Copy path">Copy</button></div>
+          <figure class="shot">
+            <a href="img/control-panel.png" target="_blank" rel="noopener" title="Open full size">
+              <img src="img/control-panel.png" width="620" height="600" loading="lazy" decoding="async"
+                   alt="The DE10-Lite Control Panel window: a photo of the board across the top, a column of buttons down the left for LED, Memory, 7-SEG, Accelerometer, Switches and VGA, and a large display area on the right.">
+            </a>
+            <figcaption>What you should see. Pick <span class="ui">LED</span> or <span class="ui">7-SEG</span> on the left to drive the board.</figcaption>
+          </figure>
           <p>If it connects, your setup is correct. Flip a few switches and watch the LEDs respond. If it cannot find the board, see <a href="#help">Help</a>.</p>
           <p class="why">The Control Panel loads its own design onto the FPGA and replaces whatever was there. That is expected &mdash; you will program your own design over it next.</p>
           <label class="done-toggle"><input type="checkbox"> Mark as done</label>
@@ -606,12 +628,84 @@
         <div class="led" aria-hidden="true">4</div>
         <div>
           <h3>Program the board</h3>
-          <p>With the board plugged in, open <span class="ui">Tools &#9656; Programmer</span> and:</p>
-          <ol>
-            <li>Click <span class="ui">Hardware Setup&hellip;</span>, select <code class="inline">USB-Blaster [USB-0]</code>, then <span class="ui">Close</span>. Mode stays on <code class="inline">JTAG</code>.</li>
-            <li>If the file list is empty, click <span class="ui">Add File&hellip;</span> and pick your <code class="inline">.sof</code>. The device should read <code class="inline">10M50DAF484</code> &mdash; if you are asked to choose one, pick <code class="inline">10M50DA</code>.</li>
-            <li>Tick <span class="ui">Program/Configure</span>, then click <span class="ui">Start</span>.</li>
+          <p>With the board plugged in, open <span class="ui">Tools &#9656; Programmer</span>.</p>
+          <ol class="walk">
+            <li>
+              <p>The Programmer window opens. Check <span class="ui">Mode</span> reads <code class="inline">JTAG</code>, then click <span class="ui">Hardware Setup&hellip;</span>.</p>
+              <figure class="shot">
+                <a href="img/prog-1-window.png" target="_blank" rel="noopener" title="Open full size">
+                  <img src="img/prog-1-window.png" width="812" height="478" loading="lazy" decoding="async"
+                       alt="The Quartus Programmer window. The Hardware Setup button at the top left is highlighted, and Mode is set to JTAG.">
+                </a>
+              </figure>
+            </li>
+            <li>
+              <p>Set <span class="ui">Currently selected hardware</span> to <code class="inline">USB-Blaster [USB-0]</code> and click <span class="ui">Close</span>. An empty dropdown means the driver is missing &mdash; see <a href="#help">Help</a>.</p>
+              <figure class="shot">
+                <a href="img/prog-2-hardware-setup.png" target="_blank" rel="noopener" title="Open full size">
+                  <img src="img/prog-2-hardware-setup.png" width="550" height="368" loading="lazy" decoding="async"
+                       alt="The Hardware Setup dialog. The Currently selected hardware dropdown is highlighted and set to USB-Blaster USB-0, which is also listed in the available hardware table.">
+                </a>
+              </figure>
+            </li>
+            <li>
+              <p>Click <span class="ui">Auto Detect</span> to scan the JTAG chain.</p>
+              <figure class="shot">
+                <a href="img/prog-3-auto-detect.png" target="_blank" rel="noopener" title="Open full size">
+                  <img src="img/prog-3-auto-detect.png" width="812" height="478" loading="lazy" decoding="async"
+                       alt="The Programmer window with the Auto Detect button on the left toolbar highlighted.">
+                </a>
+              </figure>
+            </li>
+            <li>
+              <p>Several devices share the same JTAG ID. Choose <code class="inline">10M50DA</code>.</p>
+              <figure class="shot">
+                <a href="img/prog-4-select-device.png" target="_blank" rel="noopener" title="Open full size">
+                  <img src="img/prog-4-select-device.png" width="406" height="368" loading="lazy" decoding="async"
+                       alt="The Select Device dialog listing 10M50DA, 10M50DAES and 10M50DC, with 10M50DA selected.">
+                </a>
+              </figure>
+            </li>
+            <li>
+              <p>The device now shows in the chain as <code class="inline">10M50DA</code>.</p>
+              <figure class="shot">
+                <a href="img/prog-5-detected.png" target="_blank" rel="noopener" title="Open full size">
+                  <img src="img/prog-5-detected.png" width="812" height="478" loading="lazy" decoding="async"
+                       alt="The Programmer window showing a detected device 10M50DA in the JTAG chain, with the file column reading none.">
+                </a>
+              </figure>
+            </li>
+            <li>
+              <p>Right-click the device and choose <span class="ui">Change File</span>.</p>
+              <figure class="shot">
+                <a href="img/prog-6-change-file.png" target="_blank" rel="noopener" title="Open full size">
+                  <img src="img/prog-6-change-file.png" width="839" height="499" loading="lazy" decoding="async"
+                       alt="The Programmer window with a right-click context menu open on the device row and the Change File entry highlighted.">
+                </a>
+              </figure>
+            </li>
+            <li>
+              <p>Pick your own <code class="inline" data-path="{N}.sof"></code>, which is in:</p>
+              <div class="path"><code data-path="{P}\output_files"></code><button class="copy" type="button" aria-label="Copy path">Copy</button></div>
+              <figure class="shot">
+                <a href="img/prog-7-select-sof.png" target="_blank" rel="noopener" title="Open full size">
+                  <img src="img/prog-7-select-sof.png" width="680" height="289" loading="lazy" decoding="async"
+                       alt="The Select New Programming File dialog browsing a folder, with a .sof file selected and the file type filter set to programming files.">
+                </a>
+                <figcaption>The manual shows Terasic&rsquo;s own demo file here &mdash; pick yours instead.</figcaption>
+              </figure>
+            </li>
+            <li>
+              <p>Tick <span class="ui">Program/Configure</span> on the device row, then click <span class="ui">Start</span>.</p>
+              <figure class="shot">
+                <a href="img/prog-8-start.png" target="_blank" rel="noopener" title="Open full size">
+                  <img src="img/prog-8-start.png" width="812" height="478" loading="lazy" decoding="async"
+                       alt="The Programmer window with a .sof file loaded against device 10M50DAF484, the Program slash Configure checkbox ticked, and the Start button highlighted.">
+                </a>
+              </figure>
+            </li>
           </ol>
+          <p class="credit-line">Screenshots from the <em>DE10-Lite User Manual</em>, section 3.1. Click any of them to open full size.</p>
           <p>Progress reaches 100% and LED <strong>D2</strong> (<code class="inline">CONF_DONE</code>) turns on. Your design is now running &mdash; flip the switches and watch.</p>
           <p class="why">A <code class="inline">.sof</code> is <strong>volatile</strong>: it lives in the FPGA's RAM and disappears when the board loses power. That is exactly what you want while testing &mdash; just re-program after each power cycle.</p>
           <label class="done-toggle"><input type="checkbox"> Mark as done</label>
@@ -625,7 +719,7 @@
     <h2 id="board-h">The board</h2>
     <p class="sub">Where everything is, for when an instruction says "the USB-Blaster port" and you are staring at the hardware.</p>
     <figure class="board">
-      <img src="board.png" width="1135" height="725" loading="lazy" decoding="async"
+      <img src="img/board.png" width="1135" height="725" loading="lazy" decoding="async"
            alt="Top view of the DE10-Lite board with labels: 2x20 GPIO and Altera MAX 10 10M50DAF484C7G across the top, Accelerometer and 4-bit resistor VGA upper right, Arduino connector, 5V power USB-Blaster and 64MB SDRAM down the left side, 5V/GND 2-pin header and six 7-segment displays along the bottom left, and ten switches, ten LEDs and two buttons along the bottom right.">
       <figcaption>DE10-Lite, top view. Figure 1-2 from the Terasic user manual.</figcaption>
     </figure>
