@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>DE10-Lite tools setup</title>
-<meta name="description" content="Set up the Terasic DE10-Lite Control Panel and System Builder with Quartus Prime Lite 25.1std on Windows. Download, copy two folders, plug in the board.">
+<title>DE10-Lite Guide</title>
+<meta name="description" content="Set up the DE10-Lite FPGA board with Quartus Prime Lite 25.1std, then build, compile and program a project. Notre Dame University - Louaize.">
 <meta property="og:type" content="website">
-<meta property="og:title" content="DE10-Lite tools setup">
-<meta property="og:description" content="Set up the Terasic DE10-Lite Control Panel and System Builder with Quartus Prime Lite 25.1std on Windows.">
+<meta property="og:title" content="DE10-Lite Guide">
+<meta property="og:description" content="Set up the DE10-Lite FPGA board with Quartus Prime Lite 25.1std, then build, compile and program a project.">
 <meta property="og:url" content="https://elias-antoun.github.io/de10-lite-setup/">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231E3C6E'/%3E%3Ccircle cx='16' cy='16' r='7' fill='%23FF3D2E'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -30,6 +30,11 @@
     --seg-off: rgba(255, 61, 46, 0.10);
     --code-bg: #EAEFF6;
     --focus: #E0A43A;
+    --ok: #1C7A4B;
+    --ok-bg: #E4F3EA;
+    --warn-ink: #8A5200;
+    --warn-bg: #FDF1DC;
+    --warn-line: #E8C489;
     color-scheme: light;
   }
   @media (prefers-color-scheme: dark) {
@@ -44,12 +49,17 @@
       --led-off: #2B2531;
       --led-off-ink: #A08A8E;
       --code-bg: #1A2640;
+      --ok: #6DD39B;
+      --ok-bg: #12301F;
+      --warn-ink: #F0C98A;
+      --warn-bg: #33260F;
+      --warn-line: #5C4620;
       color-scheme: dark;
     }
   }
 
   * { box-sizing: border-box; }
-  html { -webkit-text-size-adjust: 100%; }
+  html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
   body {
     margin: 0;
     background: var(--paper);
@@ -58,227 +68,259 @@
   }
   a { color: inherit; }
   :focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+  h2 { font-size: 1.45rem; line-height: 1.25; margin: 0 0 6px; letter-spacing: -0.005em; }
 
-  /* Hero: the board */
+  .skip {
+    position: absolute; left: 0; top: 0; z-index: 50; transform: translateY(-150%);
+    background: var(--surface); color: var(--ink);
+    padding: 12px 18px; border-radius: 0 0 6px 0; font-weight: 700;
+  }
+  .skip:focus { transform: translateY(0); }
+
+  /* ---------- Hero ---------- */
   .hero { background: var(--mask); color: var(--silk); }
   .hero-inner {
-    max-width: 1040px;
-    margin: 0 auto;
-    padding: 56px 24px 52px;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 400px);
-    gap: 40px;
-    align-items: center;
+    max-width: 1040px; margin: 0 auto; padding: 44px 24px 48px;
+    display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 390px);
+    gap: 40px; align-items: center;
+  }
+  .eyebrow {
+    font-size: 0.8rem; font-weight: 700; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--silk-muted); margin: 0 0 10px;
   }
   .hero h1 {
-    font-size: clamp(2.1rem, 5vw, 3rem);
-    line-height: 1.08;
-    letter-spacing: -0.01em;
-    margin: 0 0 16px;
+    font-size: clamp(2.1rem, 5vw, 3rem); line-height: 1.08;
+    letter-spacing: -0.015em; margin: 0 0 14px;
   }
-  .lede {
-    max-width: 36ch;
-    font-size: 1.15rem;
-    color: var(--silk-muted);
-    margin: 0 0 28px;
-  }
+  .lede { max-width: 40ch; font-size: 1.12rem; color: var(--silk-muted); margin: 0 0 26px; }
   .download {
-    display: inline-block;
-    background: var(--silk);
-    color: var(--mask-deep);
-    font-weight: 700;
-    text-decoration: none;
-    padding: 14px 22px;
-    border-radius: 6px;
+    display: inline-block; background: var(--silk); color: var(--mask-deep);
+    font-weight: 700; text-decoration: none; padding: 14px 22px; border-radius: 6px;
   }
   .download:hover { background: #FFFFFF; }
-  .download-note { font-size: 0.92rem; color: var(--silk-muted); margin: 12px 0 0; }
+  .download-note { font-size: 0.9rem; color: var(--silk-muted); margin: 12px 0 0; }
 
   .display { margin: 0; }
   .bezel {
-    background: var(--mask-deep);
-    border-radius: 10px;
-    padding: 18px 16px 8px;
+    background: var(--mask-deep); border-radius: 10px; padding: 18px 16px 8px;
     box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
   }
   #hex { display: block; width: 100%; height: auto; }
   .seg { fill: var(--seg-off); transition: fill 0.15s; }
   .seg.on { fill: var(--led); filter: drop-shadow(0 0 3px rgba(255, 61, 46, 0.6)); }
   .hexlabel { fill: var(--silk-muted); font: 700 9px "Atkinson Hyperlegible", sans-serif; letter-spacing: 0.04em; }
-  .display figcaption { margin-top: 12px; font-size: 0.97rem; color: var(--silk); min-height: 1.6em; }
+  .display figcaption { margin-top: 12px; font-size: 0.95rem; color: var(--silk); min-height: 3em; }
 
-  /* Content */
-  main { max-width: 720px; margin: 0 auto; padding: 48px 24px 56px; }
-  main > section + section { margin-top: 52px; }
-  h2 { font-size: 1.4rem; line-height: 1.25; margin: 0 0 12px; }
+  /* ---------- Sticky sub-nav ---------- */
+  .subnav {
+    position: sticky; top: 0; z-index: 20;
+    background: color-mix(in srgb, var(--paper) 88%, transparent);
+    -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+  }
+  @supports not (backdrop-filter: blur(4px)) { .subnav { background: var(--paper); } }
+  .subnav-inner {
+    max-width: 780px; margin: 0 auto; padding: 0 20px;
+    display: flex; align-items: center; gap: 4px; min-height: 50px;
+    overflow-x: auto; scrollbar-width: none;
+  }
+  .subnav-inner::-webkit-scrollbar { display: none; }
+  .subnav a {
+    flex: none; text-decoration: none; color: var(--muted); font-size: 0.93rem;
+    font-weight: 700; padding: 8px 11px; border-radius: 6px; white-space: nowrap;
+  }
+  .subnav a:hover { color: var(--ink); background: var(--surface); }
+  .subnav a[aria-current="true"] { color: var(--ink); background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); }
+  .tally {
+    margin-left: auto; flex: none; position: sticky; right: 0;
+    padding: 7px 0 7px 16px; background: var(--paper);
+    box-shadow: -10px 0 8px -6px var(--paper);
+    font: 500 0.85rem/1 "JetBrains Mono", ui-monospace, monospace; color: var(--muted);
+  }
 
-  .prereq ul { margin: 0; padding-left: 1.2em; }
-  .prereq li + li { margin-top: 6px; }
+  /* ---------- Layout ---------- */
+  main { max-width: 780px; margin: 0 auto; padding: 40px 20px 56px; }
+  main > section + section { margin-top: 56px; }
+  .sub { color: var(--muted); margin: 0 0 20px; }
 
+  /* ---------- Config card ---------- */
   .config {
-    background: var(--surface);
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    padding: 20px 22px 22px;
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 10px; padding: 20px 22px 22px;
   }
-  .field-label { display: block; font-weight: 700; font-size: 1.2rem; margin-bottom: 4px; }
-  .hint { color: var(--muted); margin: 0 0 14px; font-size: 0.95rem; }
-  .field-row { display: flex; gap: 8px; flex-wrap: wrap; }
-  .field-row input {
-    flex: 1 1 260px;
-    min-width: 0;
-    font: 400 0.95rem/1.4 "JetBrains Mono", ui-monospace, Consolas, monospace;
-    padding: 10px 12px;
-    border: 1px solid var(--line);
-    border-radius: 6px;
-    background: var(--paper);
-    color: var(--ink);
+  .config h2 { font-size: 1.15rem; }
+  .fields { display: grid; gap: 16px; margin-top: 16px; }
+  @media (min-width: 620px) { .fields { grid-template-columns: 1fr 1fr; } .field.wide { grid-column: 1 / -1; } }
+  .field label { display: block; font-weight: 700; font-size: 0.95rem; margin-bottom: 4px; }
+  .field .tip { display: block; font-weight: 400; color: var(--muted); font-size: 0.86rem; margin-bottom: 7px; }
+  .field input {
+    width: 100%; font: 400 0.92rem/1.4 "JetBrains Mono", ui-monospace, Consolas, monospace;
+    padding: 10px 12px; border: 1px solid var(--line); border-radius: 6px;
+    background: var(--paper); color: var(--ink);
   }
+  .field input[aria-invalid="true"] { border-color: var(--warn-line); background: var(--warn-bg); }
+  .flag {
+    display: none; margin: 7px 0 0; padding: 8px 11px; font-size: 0.87rem;
+    background: var(--warn-bg); color: var(--warn-ink);
+    border: 1px solid var(--warn-line); border-radius: 6px;
+  }
+  .flag.show { display: block; }
+  .config-actions { margin-top: 16px; }
   .btn-quiet {
-    background: transparent;
-    border: 1px solid var(--line);
-    color: var(--ink);
-    border-radius: 6px;
-    padding: 10px 14px;
-    font: inherit;
-    font-size: 0.95rem;
-    cursor: pointer;
+    background: transparent; border: 1px solid var(--line); color: var(--ink);
+    border-radius: 6px; padding: 9px 14px; font: inherit; font-size: 0.9rem; cursor: pointer;
   }
   .btn-quiet:hover { background: var(--paper); }
 
-  /* Steps, with LEDs that light as you go */
-  .steps { list-style: none; margin: 0; padding: 0; }
-  .step {
-    display: grid;
-    grid-template-columns: 44px minmax(0, 1fr);
-    gap: 18px;
-    position: relative;
-    padding-bottom: 36px;
+  /* ---------- Phases ---------- */
+  .phase-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 4px; }
+  .badge {
+    flex: none; font-size: 0.76rem; font-weight: 700; letter-spacing: 0.05em;
+    text-transform: uppercase; padding: 4px 9px; border-radius: 99px;
+    background: var(--code-bg); color: var(--muted);
   }
+  .phase-meta { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin: 0 0 24px; }
+  .count { font: 500 0.88rem/1 "JetBrains Mono", ui-monospace, monospace; color: var(--muted); }
+
+  .steps { list-style: none; margin: 0; padding: 0; counter-reset: none; }
+  .step { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 18px; position: relative; padding-bottom: 36px; }
   .step:last-child { padding-bottom: 0; }
   .step:not(:last-child)::before {
-    content: "";
-    position: absolute;
-    left: 21px;
-    top: 52px;
-    bottom: 8px;
-    width: 2px;
-    background: var(--line);
+    content: ""; position: absolute; left: 21px; top: 52px; bottom: 8px; width: 2px; background: var(--line);
   }
   .led {
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    display: grid;
-    place-items: center;
-    font-weight: 700;
-    background: var(--led-off);
-    color: var(--led-off-ink);
+    width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center;
+    font-weight: 700; background: var(--led-off); color: var(--led-off-ink);
     transition: background 0.2s, color 0.2s, box-shadow 0.2s;
   }
   .step.done .led {
-    background: var(--led);
-    color: #FFFFFF;
+    background: var(--led); color: #FFFFFF;
     box-shadow: 0 0 0 4px rgba(255, 61, 46, 0.15), 0 0 16px rgba(255, 61, 46, 0.55);
   }
-  .step h3 { font-size: 1.2rem; line-height: 1.3; margin: 8px 0 8px; }
+  .step h3 { font-size: 1.18rem; line-height: 1.3; margin: 8px 0 8px; }
   .step p { margin: 0 0 12px; }
-  .why { color: var(--muted); font-size: 0.95rem; }
+  .step ol, .step ul { margin: 0 0 12px; padding-left: 1.25em; }
+  .step li + li { margin-top: 7px; }
+  .why { color: var(--muted); font-size: 0.94rem; }
+  .why strong { color: var(--ink); }
 
   .path {
-    display: flex;
-    align-items: stretch;
-    border: 1px solid var(--line);
-    border-radius: 6px;
-    background: var(--code-bg);
-    margin: 0 0 12px;
-    overflow: hidden;
+    display: flex; align-items: stretch; border: 1px solid var(--line);
+    border-radius: 6px; background: var(--code-bg); margin: 0 0 12px; overflow: hidden;
   }
   .path code {
-    flex: 1;
-    min-width: 0;
-    overflow-x: auto;
-    white-space: nowrap;
-    padding: 10px 12px;
-    font: 400 0.88rem/1.5 "JetBrains Mono", ui-monospace, Consolas, monospace;
+    flex: 1; min-width: 0; overflow-x: auto; white-space: nowrap; padding: 10px 12px;
+    font: 400 0.86rem/1.5 "JetBrains Mono", ui-monospace, Consolas, monospace;
   }
   .path .copy {
-    flex: none;
-    border: 0;
-    border-left: 1px solid var(--line);
-    background: var(--surface);
-    color: var(--ink);
-    font: inherit;
-    font-size: 0.9rem;
-    padding: 0 14px;
-    min-width: 76px;
-    cursor: pointer;
+    flex: none; border: 0; border-left: 1px solid var(--line); background: var(--surface);
+    color: var(--ink); font: inherit; font-size: 0.88rem; padding: 0 14px; min-width: 76px; cursor: pointer;
   }
   .path .copy:hover { background: var(--paper); }
+  code.inline {
+    background: var(--code-bg); border-radius: 4px; padding: 1px 5px;
+    font: 400 0.88em/1.4 "JetBrains Mono", ui-monospace, Consolas, monospace;
+  }
+  .ui { font-weight: 700; }
 
   .done-toggle {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    font-weight: 700;
-    cursor: pointer;
-    user-select: none;
-    margin-top: 2px;
+    display: inline-flex; align-items: center; gap: 10px; font-weight: 700;
+    cursor: pointer; user-select: none; margin-top: 2px;
   }
   .done-toggle input { width: 20px; height: 20px; margin: 0; accent-color: var(--led); cursor: pointer; }
 
-  /* Troubleshooting */
+  /* ---------- System Builder mock panel ---------- */
+  .syscfg { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px 18px; margin: 0 0 14px; }
+  .syscfg-title { font-weight: 700; font-size: 0.95rem; margin: 0 0 12px; }
+  .syscfg-cols { display: grid; gap: 18px; margin-bottom: 16px; }
+  @media (min-width: 560px) { .syscfg-cols { grid-template-columns: 1fr 1fr; gap: 24px; } }
+  .syscfg-sub {
+    font-size: 0.78rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--muted); margin: 0 0 9px;
+  }
+  .syscfg-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+  .syscfg-list li {
+    display: flex; align-items: center; gap: 9px; font-size: 0.94rem;
+    padding: 5px 9px; border-radius: 5px;
+  }
+  .syscfg-list li.on { background: var(--ok-bg); color: var(--ink); font-weight: 700; }
+  .syscfg-list li.off { color: var(--muted); }
+  .syscfg-list li.off .lbl { text-decoration: line-through; text-decoration-thickness: 1px; }
+  .mark { flex: none; width: 17px; text-align: center; font-weight: 700; }
+  .on .mark { color: var(--ok); }
+  .off .mark { color: var(--muted); }
+  .qty { margin-left: auto; font: 500 0.82rem/1 "JetBrains Mono", ui-monospace, monospace; opacity: 0.8; }
+  .syscfg-extra { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 5px 12px; font-size: 0.92rem; }
+  .syscfg-extra dt { font-weight: 700; }
+  .syscfg-extra dd { margin: 0; color: var(--muted); }
+
+  /* ---------- Board reference ---------- */
+  figure.board { margin: 0; }
+  figure.board img {
+    width: 100%; height: auto; display: block; border: 1px solid var(--line);
+    border-radius: 8px; background: #FFFFFF;
+  }
+  figure.board figcaption { margin-top: 10px; font-size: 0.89rem; color: var(--muted); }
+  .facts { margin: 22px 0 0; display: grid; grid-template-columns: auto 1fr; gap: 9px 16px; font-size: 0.95rem; }
+  .facts dt { font-weight: 700; }
+  .facts dd { margin: 0; color: var(--muted); }
+
+  /* ---------- Troubleshooting ---------- */
   details { border-top: 1px solid var(--line); padding: 14px 0; }
   details:last-of-type { border-bottom: 1px solid var(--line); }
   summary {
-    cursor: pointer;
-    font-weight: 700;
-    list-style: none;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
+    cursor: pointer; font-weight: 700; list-style: none;
+    display: flex; justify-content: space-between; align-items: center; gap: 12px;
   }
   summary::-webkit-details-marker { display: none; }
   summary::after { content: "+"; font-weight: 400; font-size: 1.4rem; line-height: 1; color: var(--muted); }
   details[open] summary::after { content: "\2212"; }
-  details ol { margin: 12px 0 0; padding-left: 1.3em; }
+  details ol, details ul { margin: 12px 0 0; padding-left: 1.3em; }
   details li + li { margin-top: 8px; }
   details p { margin: 12px 0 0; }
   details .path { margin: 8px 0 0; }
 
   footer {
-    max-width: 720px;
-    margin: 0 auto;
-    padding: 24px 24px 48px;
-    border-top: 1px solid var(--line);
-    color: var(--muted);
-    font-size: 0.92rem;
+    max-width: 780px; margin: 0 auto; padding: 24px 20px 48px;
+    border-top: 1px solid var(--line); color: var(--muted); font-size: 0.9rem;
   }
-  footer p { margin: 0 0 6px; }
+  footer p { margin: 0 0 8px; }
 
-  @media (max-width: 820px) {
-    .hero-inner { grid-template-columns: 1fr; padding: 40px 20px 40px; gap: 32px; }
-    main { padding: 40px 20px 48px; }
-    footer { padding: 24px 20px 40px; }
+  @media (max-width: 860px) {
+    .hero-inner { grid-template-columns: 1fr; padding: 36px 20px 36px; gap: 30px; }
   }
   @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
     * { transition: none !important; }
+  }
+  @media print {
+    .subnav, .download, .done-toggle, .copy, .config-actions, .btn-quiet, .skip { display: none !important; }
+    .hero { background: none; color: #000; }
+    .hero-inner { display: block; padding: 0 0 18px; }
+    .eyebrow, .lede, .display figcaption { color: #333; }
+    .display { display: none; }
+    body { background: #fff; font-size: 10.5pt; }
+    details { border: 0; }
+    details > *:not(summary) { display: block !important; }
+    .step { page-break-inside: avoid; }
+    .path code { white-space: pre-wrap; word-break: break-all; }
   }
 </style>
 </head>
 <body>
 
+<a class="skip" href="#main">Skip to content</a>
+
 <header class="hero">
   <div class="hero-inner">
     <div>
-      <h1>DE10-Lite tools setup</h1>
-      <p class="lede">Get the Control Panel and System Builder working with Quartus Prime Lite 25.1std on Windows.</p>
-      <!-- This always serves the newest release's asset. It only works once a release
-           tagged with a DE10_Lite_Setup.zip asset exists. If you instead commit the zip
-           next to this page, change the href to just "DE10_Lite_Setup.zip". -->
+      <p class="eyebrow">Notre Dame University &ndash; Louaize</p>
+      <h1>DE10-Lite Guide</h1>
+      <p class="lede">Set up the board with Quartus Prime Lite 25.1std, then build, compile and program your first project.</p>
+      <!-- Always serves the newest release's asset. Publish a release with an asset
+           named exactly DE10_Lite_Setup.zip, or change this href. -->
       <a class="download" href="https://github.com/elias-antoun/de10-lite-setup/releases/latest/download/DE10_Lite_Setup.zip">Download setup zip</a>
-      <p class="download-note">Contains the bin32 folder and the DE10-Lite tools.</p>
+      <p class="download-note">The bin32 folder and the DE10-Lite tools. About 36&nbsp;MB.</p>
     </div>
     <figure class="display">
       <div class="bezel">
@@ -289,34 +331,65 @@
   </div>
 </header>
 
-<main>
-  <section class="prereq" aria-labelledby="prereq-h">
-    <h2 id="prereq-h">Before you start</h2>
-    <ul>
-      <li>Install Quartus Prime Lite 25.1std with MAX 10 device support.</li>
-      <li>Download the zip and extract it (right-click, then Extract All). Don't run anything from inside the zip.</li>
-    </ul>
-  </section>
+<nav class="subnav" aria-label="Sections">
+  <div class="subnav-inner">
+    <a href="#setup">Setup</a>
+    <a href="#lab">Lab</a>
+    <a href="#board">Board</a>
+    <a href="#help">Help</a>
+    <span class="tally" id="tally"></span>
+  </div>
+</nav>
 
-  <section class="config">
-    <label class="field-label" for="qdir">Where is Quartus installed?</label>
-    <p class="hint">The default for 25.1std is shown. If you installed it somewhere else, change it here and every path on this page updates.</p>
-    <div class="field-row">
-      <input id="qdir" type="text" spellcheck="false" autocomplete="off" autocapitalize="off">
-      <button class="btn-quiet" type="button" id="qreset">Use default</button>
+<main id="main">
+
+  <section class="config" aria-labelledby="cfg-h">
+    <h2 id="cfg-h">Your folders</h2>
+    <p class="sub">Fill these in once. Every path on this page updates to match, so you can copy them straight into Windows.</p>
+    <div class="fields">
+      <div class="field wide">
+        <label for="qdir">Quartus installation folder</label>
+        <span class="tip">The default for 25.1std is shown. Pasting a path that ends in <code class="inline">\quartus\bin64</code> also works.</span>
+        <input id="qdir" type="text" spellcheck="false" autocomplete="off" autocapitalize="off" autocorrect="off">
+      </div>
+      <div class="field">
+        <label for="pdir">Project folder</label>
+        <span class="tip">Where System Builder writes your project.</span>
+        <input id="pdir" type="text" spellcheck="false" autocomplete="off" autocapitalize="off" autocorrect="off">
+        <p class="flag" id="pflag">This path contains a space. Quartus and System Builder are unreliable with spaces in paths &mdash; use something like <code class="inline">C:\fpga\adder_top</code>.</p>
+      </div>
+      <div class="field">
+        <label for="pname">Project name</label>
+        <span class="tip">Becomes the top-level entity name.</span>
+        <input id="pname" type="text" spellcheck="false" autocomplete="off" autocapitalize="off" autocorrect="off">
+        <p class="flag" id="nflag">Use letters, digits and underscores only, starting with a letter. This name must match the module name inside your design file exactly.</p>
+      </div>
+    </div>
+    <div class="config-actions">
+      <button class="btn-quiet" type="button" id="cfgreset">Reset to defaults</button>
     </div>
   </section>
 
-  <section aria-labelledby="steps-h">
-    <h2 id="steps-h">Setup steps</h2>
-    <ol class="steps">
+  <!-- ============ PHASE 1 ============ -->
+  <section id="setup" aria-labelledby="setup-h">
+    <div class="phase-head">
+      <h2 id="setup-h">Setup</h2>
+      <span class="badge">Once per PC</span>
+    </div>
+    <p class="sub">Installs the tools that let Quartus talk to the DE10-Lite. You only do this the first time.</p>
+    <div class="phase-meta">
+      <span class="count" data-count="setup"></span>
+      <button class="btn-quiet" type="button" data-reset="setup">Clear these steps</button>
+    </div>
+
+    <ol class="steps" data-phase="setup">
       <li class="step">
         <div class="led" aria-hidden="true">1</div>
         <div>
           <h3>Copy bin32 into Quartus</h3>
-          <p>Copy the bin32 folder from the zip into your Quartus folder, next to the bin64 folder that's already there. You should end up with:</p>
+          <p>Extract the zip, then copy the <code class="inline">bin32</code> folder into your Quartus folder, next to the <code class="inline">bin64</code> folder already there:</p>
           <div class="path"><code data-path="{Q}\quartus\bin32"></code><button class="copy" type="button" aria-label="Copy path">Copy</button></div>
-          <p class="why">The Control Panel is a 32-bit program, but Quartus only includes 64-bit tools. bin32 gives it the pieces it needs to talk to the board.</p>
+          <p class="why">The Control Panel is a 32-bit program, but Quartus ships only 64-bit tools. <code class="inline">bin32</code> supplies the pieces it needs to reach the board.</p>
           <label class="done-toggle"><input type="checkbox"> Mark as done</label>
         </div>
       </li>
@@ -324,8 +397,9 @@
         <div class="led" aria-hidden="true">2</div>
         <div>
           <h3>Copy the DE10-Lite tools</h3>
-          <p>Copy the Tools folder from the zip into C:\DE10_Lite, so you have:</p>
+          <p>Copy the <code class="inline">Tools</code> folder from the zip so you end up with:</p>
           <div class="path"><code>C:\DE10_Lite\Tools</code><button class="copy" type="button" aria-label="Copy path">Copy</button></div>
+          <p class="why">Neither tool has an installer &mdash; they run straight from this folder.</p>
           <label class="done-toggle"><input type="checkbox"> Mark as done</label>
         </div>
       </li>
@@ -333,41 +407,183 @@
         <div class="led" aria-hidden="true">3</div>
         <div>
           <h3>Connect the board</h3>
-          <p>Plug the USB cable into the board's USB Blaster port and into your PC. The board is powered over USB, so it doesn't need a separate supply.</p>
+          <p>Plug the supplied USB cable into the board's <strong>USB-Blaster</strong> port &mdash; connector <code class="inline">J3</code>, the square type-B socket on the left edge. The board is powered over USB and needs no separate supply.</p>
+          <p class="why">LED <strong>D4</strong> (<code class="inline">Power Good</code>) lights up. If it stays dark, try another cable &mdash; charge-only USB cables carry no data.</p>
           <label class="done-toggle"><input type="checkbox"> Mark as done</label>
         </div>
       </li>
       <li class="step">
         <div class="led" aria-hidden="true">4</div>
         <div>
-          <h3>Open the Control Panel</h3>
-          <p>Run:</p>
+          <h3>Check it works</h3>
+          <p>Run the Control Panel:</p>
           <div class="path"><code>C:\DE10_Lite\Tools\DE10_Lite_ControlPanel\DE10_Lite_ControlPanel.exe</code><button class="copy" type="button" aria-label="Copy path">Copy</button></div>
-          <p class="why">When it connects, it loads its own design onto the FPGA and replaces whatever was there. That's expected; program your own design from Quartus again afterwards.</p>
-          <p>To start a new Quartus project with the board's pins already assigned, run the System Builder. It works without the board connected.</p>
-          <div class="path"><code>C:\DE10_Lite\Tools\DE10_Lite_SystemBuilder\DE10_Lite_SystemBuilder.exe</code><button class="copy" type="button" aria-label="Copy path">Copy</button></div>
+          <p>If it connects, your setup is correct. Flip a few switches and watch the LEDs respond. If it cannot find the board, see <a href="#help">Help</a>.</p>
+          <p class="why">The Control Panel loads its own design onto the FPGA and replaces whatever was there. That is expected &mdash; you will program your own design over it next.</p>
           <label class="done-toggle"><input type="checkbox"> Mark as done</label>
         </div>
       </li>
     </ol>
   </section>
 
-  <section aria-labelledby="help-h">
-    <h2 id="help-h">If something doesn't work</h2>
+  <!-- ============ PHASE 2 ============ -->
+  <section id="lab" aria-labelledby="lab-h">
+    <div class="phase-head">
+      <h2 id="lab-h">Lab workflow</h2>
+      <span class="badge">Once per project</span>
+    </div>
+    <p class="sub">From an empty folder to a running design on the board. Repeat these four steps for every lab.</p>
+    <div class="phase-meta">
+      <span class="count" data-count="lab"></span>
+      <button class="btn-quiet" type="button" data-reset="lab">Start a new project</button>
+    </div>
+
+    <ol class="steps" data-phase="lab">
+      <li class="step">
+        <div class="led" aria-hidden="true">1</div>
+        <div>
+          <h3>Create the project in System Builder</h3>
+          <p>Run System Builder &mdash; it generates a Quartus project with every DE10-Lite pin already assigned, so you never assign pins by hand:</p>
+          <div class="path"><code>C:\DE10_Lite\Tools\DE10_Lite_SystemBuilder\DE10_Lite_SystemBuilder.exe</code><button class="copy" type="button" aria-label="Copy path">Copy</button></div>
+          <p>Set <span class="ui">Project Name</span> to <code class="inline" data-path="{N}"></code>, then tick <em>only</em> these:</p>
+
+          <div class="syscfg">
+            <p class="syscfg-title">System Configuration</p>
+            <div class="syscfg-cols">
+              <div>
+                <p class="syscfg-sub">Tick these three</p>
+                <ul class="syscfg-list">
+                  <li class="on"><span class="mark">&#10003;</span> Switch <span class="qty">x10</span></li>
+                  <li class="on"><span class="mark">&#10003;</span> LED <span class="qty">x10</span></li>
+                  <li class="on"><span class="mark">&#10003;</span> 7-Segment <span class="qty">x6</span></li>
+                </ul>
+              </div>
+              <div>
+                <p class="syscfg-sub">Leave all of these off</p>
+                <ul class="syscfg-list">
+                  <li class="off"><span class="mark">&times;</span> <span class="lbl">CLOCK</span></li>
+                  <li class="off"><span class="mark">&times;</span> <span class="lbl">Button</span></li>
+                  <li class="off"><span class="mark">&times;</span> <span class="lbl">VGA</span></li>
+                  <li class="off"><span class="mark">&times;</span> <span class="lbl">SDRAM</span></li>
+                  <li class="off"><span class="mark">&times;</span> <span class="lbl">Accelerometer</span></li>
+                  <li class="off"><span class="mark">&times;</span> <span class="lbl">Arduino Header</span></li>
+                </ul>
+              </div>
+            </div>
+            <dl class="syscfg-extra">
+              <dt>2x20 GPIO Header</dt><dd>None</dd>
+              <dt>Prefix Name</dt><dd>leave blank</dd>
+            </dl>
+          </div>
+
+          <p>Click <span class="ui">Generate</span> and save into a folder with <strong>no spaces in its path</strong>:</p>
+          <div class="path"><code data-path="{P}"></code><button class="copy" type="button" aria-label="Copy path">Copy</button></div>
+          <p class="why">You now have <code class="inline" data-path="{N}.qpf"></code> (the project), <code class="inline" data-path="{N}.qsf"></code> (pin assignments), <code class="inline" data-path="{N}.sdc"></code>, <code class="inline" data-path="{N}.htm"></code> (a readable pin table) and <code class="inline" data-path="{N}.v"></code> &mdash; an empty wrapper with the ports already declared.</p>
+          <label class="done-toggle"><input type="checkbox"> Mark as done</label>
+        </div>
+      </li>
+
+      <li class="step">
+        <div class="led" aria-hidden="true">2</div>
+        <div>
+          <h3>Add the design</h3>
+          <p>Open the wrapper System Builder just generated:</p>
+          <div class="path"><code data-path="{P}\{N}.v"></code><button class="copy" type="button" aria-label="Copy path">Copy</button></div>
+          <p>Delete everything in it, paste in the full contents of the <code class="inline" data-path="{N}.v"></code> your instructor supplied &mdash; all four modules &mdash; and save.</p>
+          <p class="why">Keep the file name and the module name identical to the project name (<code class="inline" data-path="{N}"></code>). A mismatch here is the most common cause of a failed compile.</p>
+          <label class="done-toggle"><input type="checkbox"> Mark as done</label>
+        </div>
+      </li>
+
+      <li class="step">
+        <div class="led" aria-hidden="true">3</div>
+        <div>
+          <h3>Compile</h3>
+          <p>Open the project in Quartus:</p>
+          <div class="path"><code data-path="{P}\{N}.qpf"></code><button class="copy" type="button" aria-label="Copy path">Copy</button></div>
+          <p>Choose <span class="ui">Processing &#9656; Start Compilation</span> and wait for <em>Full Compilation was successful</em>.</p>
+          <p>Then open the <span class="ui">Compilation Report &#9656; Flow Summary</span> and sanity-check it:</p>
+          <ul>
+            <li>A few dozen logic elements.</li>
+            <li><strong>Total pins = 68</strong> &mdash; that is 10 switches + 10 LEDs + 6 &times; 8 seven-segment lines. A different number means something was ticked wrong in step 1.</li>
+          </ul>
+          <p class="why">Warnings about undefined clocks or timing are <strong>normal here</strong> &mdash; this design has no clock. The output you need is:</p>
+          <div class="path"><code data-path="{P}\output_files\{N}.sof"></code><button class="copy" type="button" aria-label="Copy path">Copy</button></div>
+          <label class="done-toggle"><input type="checkbox"> Mark as done</label>
+        </div>
+      </li>
+
+      <li class="step">
+        <div class="led" aria-hidden="true">4</div>
+        <div>
+          <h3>Program the board</h3>
+          <p>With the board plugged in, open <span class="ui">Tools &#9656; Programmer</span> and:</p>
+          <ol>
+            <li>Click <span class="ui">Hardware Setup&hellip;</span>, select <code class="inline">USB-Blaster [USB-0]</code>, then <span class="ui">Close</span>. Mode stays on <code class="inline">JTAG</code>.</li>
+            <li>If the file list is empty, click <span class="ui">Add File&hellip;</span> and pick your <code class="inline">.sof</code>. The device should read <code class="inline">10M50DAF484</code> &mdash; if you are asked to choose one, pick <code class="inline">10M50DA</code>.</li>
+            <li>Tick <span class="ui">Program/Configure</span>, then click <span class="ui">Start</span>.</li>
+          </ol>
+          <p>Progress reaches 100% and LED <strong>D2</strong> (<code class="inline">CONF_DONE</code>) turns on. Your design is now running &mdash; flip the switches and watch.</p>
+          <p class="why">A <code class="inline">.sof</code> is <strong>volatile</strong>: it lives in the FPGA's RAM and disappears when the board loses power. That is exactly what you want while testing &mdash; just re-program after each power cycle.</p>
+          <label class="done-toggle"><input type="checkbox"> Mark as done</label>
+        </div>
+      </li>
+    </ol>
+  </section>
+
+  <!-- ============ BOARD ============ -->
+  <section id="board" aria-labelledby="board-h">
+    <h2 id="board-h">The board</h2>
+    <p class="sub">Where everything is, for when an instruction says "the USB-Blaster port" and you are staring at the hardware.</p>
+    <figure class="board">
+      <img src="board.png" width="1135" height="725" loading="lazy" decoding="async"
+           alt="Top view of the DE10-Lite board with labels: 2x20 GPIO and Altera MAX 10 10M50DAF484C7G across the top, Accelerometer and 4-bit resistor VGA upper right, Arduino connector, 5V power USB-Blaster and 64MB SDRAM down the left side, 5V/GND 2-pin header and six 7-segment displays along the bottom left, and ten switches, ten LEDs and two buttons along the bottom right.">
+      <figcaption>DE10-Lite, top view. Figure 1-2 from the Terasic user manual.</figcaption>
+    </figure>
+    <dl class="facts">
+      <dt>FPGA</dt><dd>Altera MAX 10, <code class="inline">10M50DAF484C7G</code></dd>
+      <dt>Inputs</dt><dd>10 slide switches (<code class="inline">SW</code>), 2 push buttons (<code class="inline">KEY</code>)</dd>
+      <dt>Outputs</dt><dd>10 red LEDs (<code class="inline">LEDR</code>), 6 seven-segment displays (<code class="inline">HEX</code>)</dd>
+      <dt>Programming</dt><dd>USB-Blaster over connector <code class="inline">J3</code>, which also powers the board</dd>
+      <dt>Status LEDs</dt><dd><code class="inline">D4</code> Power Good &middot; <code class="inline">D2</code> CONF_DONE, lights once a design is loaded</dd>
+    </dl>
+  </section>
+
+  <!-- ============ HELP ============ -->
+  <section id="help" aria-labelledby="help-h">
+    <h2 id="help-h">Help</h2>
+    <p class="sub">The four things that actually go wrong.</p>
+
     <details>
-      <summary>The Control Panel can't find the board</summary>
+      <summary>Windows does not recognise the board</summary>
+      <p>Open Device Manager. If <code class="inline">USB-Blaster</code> shows a yellow warning icon or sits under <em>Other devices</em>, the driver is missing. Right-click it, choose <span class="ui">Update driver</span>, then <span class="ui">Browse my computer for drivers</span>, and point it here with <span class="ui">Include subfolders</span> ticked:</p>
+      <div class="path"><code data-path="{Q}\quartus\drivers\usb-blaster"></code><button class="copy" type="button" aria-label="Copy path">Copy</button></div>
+      <p>Windows never finds this driver on its own &mdash; it ships with Quartus, so you must browse to it manually.</p>
+    </details>
+
+    <details>
+      <summary>The Programmer or Control Panel cannot see the board</summary>
       <ol>
-        <li>Open Device Manager. If USB-Blaster has a yellow warning icon or shows up as an unknown device, right-click it, choose Update driver, then Browse my computer for drivers. Pick this folder and tick Include subfolders:
-          <div class="path"><code data-path="{Q}\quartus\drivers"></code><button class="copy" type="button" aria-label="Copy path">Copy</button></div>
-        </li>
-        <li>Close the Quartus Programmer and anything else using the board, then open the Control Panel again.</li>
-        <li>Check that bin32 is in the same folder as bin64 (step 1).</li>
-        <li>Try a different USB port or cable.</li>
+        <li>Only one program can hold the USB-Blaster at a time. Close the Quartus Programmer before opening the Control Panel, and vice versa.</li>
+        <li>Check that <code class="inline">bin32</code> sits in the same folder as <code class="inline">bin64</code> (setup step 1).</li>
+        <li>In the Programmer, click <span class="ui">Hardware Setup&hellip;</span> &mdash; if the dropdown is empty, the driver is not installed. See the previous item.</li>
+        <li>Try a different USB port and a different cable. Charge-only cables have no data wires.</li>
       </ol>
     </details>
+
     <details>
-      <summary>I don't know where Quartus is installed</summary>
-      <p>In the Start menu, right-click Quartus Prime, choose More, then Open file location. Right-click the shortcut that appears and choose Open file location again. You'll land in a folder ending in \quartus\bin64. Paste that path into the box at the top of this page; it removes the \quartus\bin64 part for you.</p>
+      <summary>Compilation fails, or Total pins is not 68</summary>
+      <ol>
+        <li>The module name inside your <code class="inline">.v</code> file must match the project name (<code class="inline" data-path="{N}"></code>) exactly, including case.</li>
+        <li>A wrong pin count means the System Builder ticks were off. Re-run step 1 with only Switch, LED and 7-Segment ticked, and paste your design in again.</li>
+        <li>Check the path has no spaces in it.</li>
+        <li>Clock and timing warnings are expected and are not errors &mdash; look for the red <em>Error</em> lines specifically.</li>
+      </ol>
+    </details>
+
+    <details>
+      <summary>I do not know where Quartus is installed</summary>
+      <p>In the Start menu, right-click <span class="ui">Quartus Prime</span>, choose <span class="ui">More &#9656; Open file location</span>. Right-click the shortcut that appears and choose <span class="ui">Open file location</span> again. You will land in a folder ending in <code class="inline">\quartus\bin64</code>. Paste that whole path into the Quartus box at the top of this page &mdash; it trims the ending for you.</p>
     </details>
   </section>
 </main>
@@ -375,43 +591,84 @@
 <footer>
   <!-- EDIT: add your email or office hours after the name -->
   <p>Questions or problems? Contact Elias Antoun.</p>
-  <p>The DE10-Lite board, Control Panel and System Builder are made by Terasic. Quartus Prime is made by Altera.</p>
+  <p>The DE10-Lite board, the Control Panel and the System Builder are made by Terasic; the board diagram is Figure 1-2 from their user manual. Quartus Prime and MAX 10 are Altera products. Redistributed here for coursework only.</p>
+  <p><button class="btn-quiet" type="button" id="resetall">Reset all progress</button></p>
 </footer>
 
 <script>
 (function () {
-  var DEFAULT_Q = 'C:\\altera_lite\\25.1std';
-  var STEP_NAMES = ['copy bin32 into Quartus', 'copy the DE10-Lite tools', 'connect the board', 'open the Control Panel'];
-  var KEY = 'de10lite-setup-v1';
+  'use strict';
 
-  var state = { q: DEFAULT_Q, typed: DEFAULT_Q, done: STEP_NAMES.map(function () { return false; }) };
-  try {
-    var saved = JSON.parse(localStorage.getItem(KEY) || 'null');
-    if (saved) {
-      if (typeof saved.typed === 'string' && saved.typed.trim()) { state.typed = saved.typed; state.q = cleanQ(saved.typed); }
-      if (Array.isArray(saved.done)) { state.done = STEP_NAMES.map(function (_, i) { return !!saved.done[i]; }); }
+  var DEF = { q: 'C:\\altera_lite\\25.1std', p: 'C:\\fpga\\adder_top', n: 'adder_top' };
+  var PHASES = {
+    setup: ['copy bin32 into Quartus', 'copy the DE10-Lite tools', 'connect the board', 'check it works'],
+    lab: ['create the project in System Builder', 'add the design', 'compile', 'program the board']
+  };
+  var LABEL = { setup: 'Setup', lab: 'Lab workflow' };
+  var CODE = { setup: 'SEt', lab: 'LAb' };
+  var KEY = 'de10lite-guide-v2';
+  var OLDKEY = 'de10lite-setup-v1';
+
+  function blank() { return [false, false, false, false]; }
+  var state = {
+    typed: { q: DEF.q, p: DEF.p, n: DEF.n },
+    q: DEF.q, p: DEF.p, n: DEF.n,
+    done: { setup: blank(), lab: blank() }
+  };
+
+  // ---------- cleaners ----------
+  function tidy(v) {
+    return String(v).trim().replace(/^"+|"+$/g, '').replace(/\//g, '\\').replace(/\\+$/, '');
+  }
+  function cleanQ(v) { return tidy(v).replace(/\\quartus(\\bin(32|64))?$/i, '') || DEF.q; }
+  function cleanP(v) { return tidy(v) || DEF.p; }
+  function cleanN(v) { return String(v).trim().replace(/^"+|"+$/g, '').replace(/\.(v|sv|qpf|qsf)$/i, '') || DEF.n; }
+
+  // ---------- storage ----------
+  function load() {
+    var raw = null;
+    try { raw = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) {}
+    if (raw) {
+      if (raw.typed) {
+        if (typeof raw.typed.q === 'string' && raw.typed.q.trim()) { state.typed.q = raw.typed.q; state.q = cleanQ(raw.typed.q); }
+        if (typeof raw.typed.p === 'string' && raw.typed.p.trim()) { state.typed.p = raw.typed.p; state.p = cleanP(raw.typed.p); }
+        if (typeof raw.typed.n === 'string' && raw.typed.n.trim()) { state.typed.n = raw.typed.n; state.n = cleanN(raw.typed.n); }
+      }
+      if (raw.done) {
+        ['setup', 'lab'].forEach(function (ph) {
+          if (Array.isArray(raw.done[ph])) state.done[ph] = blank().map(function (_, i) { return !!raw.done[ph][i]; });
+        });
+      }
+      return;
     }
-  } catch (e) {}
-
+    // migrate from the first version of this page
+    try {
+      var old = JSON.parse(localStorage.getItem(OLDKEY) || 'null');
+      if (old) {
+        if (typeof old.typed === 'string' && old.typed.trim()) { state.typed.q = old.typed; state.q = cleanQ(old.typed); }
+        if (Array.isArray(old.done)) state.done.setup = blank().map(function (_, i) { return !!old.done[i]; });
+      }
+    } catch (e) {}
+  }
   function save() {
     try { localStorage.setItem(KEY, JSON.stringify({ typed: state.typed, done: state.done })); } catch (e) {}
   }
+  load();
 
-  // Accepts "C:\altera_lite\25.1std", "...\quartus", "...\quartus\bin64", quotes, forward slashes
-  function cleanQ(v) {
-    var q = String(v).trim().replace(/^"+|"+$/g, '').replace(/\//g, '\\').replace(/\\+$/, '');
-    q = q.replace(/\\quartus(\\bin(32|64))?$/i, '');
-    return q || DEFAULT_Q;
+  // ---------- path templating ----------
+  function fill(tpl) {
+    return tpl.replace(/\{([QPN])\}/g, function (m, k) {
+      return k === 'Q' ? state.q : k === 'P' ? state.p : state.n;
+    });
   }
-
+  var pathEls = document.querySelectorAll('[data-path]');
   function renderPaths() {
-    var els = document.querySelectorAll('[data-path]');
-    for (var i = 0; i < els.length; i++) {
-      els[i].textContent = els[i].getAttribute('data-path').replace('{Q}', function () { return state.q; });
+    for (var i = 0; i < pathEls.length; i++) {
+      pathEls[i].textContent = fill(pathEls[i].getAttribute('data-path'));
     }
   }
 
-  // Seven-segment display, laid out like the board's HEX5..HEX0
+  // ---------- seven-segment ----------
   var NS = 'http://www.w3.org/2000/svg';
   function H(y) { return '5.5,' + y + ' 9.5,' + (y - 4) + ' 30.5,' + (y - 4) + ' 34.5,' + y + ' 30.5,' + (y + 4) + ' 9.5,' + (y + 4); }
   function V(x, y1, y2) {
@@ -419,8 +676,13 @@
            x + ',' + (y2 - 1.5) + ' ' + (x - 4) + ',' + (y2 - 5.5) + ' ' + (x - 4) + ',' + (y1 + 5.5);
   }
   var SEGS = { a: H(4), b: V(36, 4, 36), c: V(36, 36, 68), d: H(68), e: V(4, 36, 68), f: V(4, 4, 36), g: H(36) };
-  var GLYPH = { 'S': 'acdfg', 't': 'defg', 'E': 'adefg', 'P': 'abefg', 'd': 'bcdeg', 'o': 'cdeg', 'n': 'ceg',
-                '1': 'bc', '2': 'abdeg', '3': 'abcdg', '4': 'bcfg', ' ': '' };
+  var GLYPH = {
+    '0': 'abcdef', '1': 'bc', '2': 'abdeg', '3': 'abcdg', '4': 'bcfg',
+    '5': 'acdfg', '6': 'acdefg', '7': 'abc', '8': 'abcdefg', '9': 'abcdfg',
+    'A': 'abcefg', 'b': 'cdefg', 'C': 'adef', 'd': 'bcdeg', 'E': 'adefg',
+    'F': 'aefg', 'L': 'def', 'n': 'ceg', 'o': 'cdeg', 'P': 'abefg',
+    'r': 'eg', 'S': 'acdfg', 't': 'defg', 'U': 'bcdef', '-': 'g', ' ': ''
+  };
   var svg = document.getElementById('hex');
   var digits = [];
   for (var i = 0; i < 6; i++) {
@@ -428,11 +690,11 @@
     g.setAttribute('transform', 'translate(' + (16 + i * 54) + ' 8) skewX(-7)');
     var segs = {};
     for (var k in SEGS) {
-      var p = document.createElementNS(NS, 'polygon');
-      p.setAttribute('points', SEGS[k]);
-      p.setAttribute('class', 'seg');
-      g.appendChild(p);
-      segs[k] = p;
+      var poly = document.createElementNS(NS, 'polygon');
+      poly.setAttribute('points', SEGS[k]);
+      poly.setAttribute('class', 'seg');
+      g.appendChild(poly);
+      segs[k] = poly;
     }
     svg.appendChild(g);
     digits.push(segs);
@@ -445,63 +707,122 @@
     svg.appendChild(t);
   }
   function showText(str) {
+    str = (str + '      ').slice(0, 6);
     for (var i = 0; i < 6; i++) {
-      var on = GLYPH[str.charAt(i)] || '';
+      var on = GLYPH[str.charAt(i)];
+      if (on === undefined) on = '';
       for (var k in digits[i]) {
         digits[i][k].setAttribute('class', on.indexOf(k) >= 0 ? 'seg on' : 'seg');
       }
     }
   }
 
-  var stepEls = document.querySelectorAll('.step');
-  var status = document.getElementById('status');
+  // ---------- progress ----------
+  var groups = {};
+  ['setup', 'lab'].forEach(function (ph) {
+    groups[ph] = document.querySelectorAll('.steps[data-phase="' + ph + '"] .step');
+  });
+  var statusEl = document.getElementById('status');
+  var tallyEl = document.getElementById('tally');
+
   function renderProgress() {
-    var next = state.done.indexOf(false);
-    for (var i = 0; i < stepEls.length; i++) {
-      stepEls[i].classList.toggle('done', state.done[i]);
-      stepEls[i].querySelector('input').checked = state.done[i];
-    }
-    if (next === -1) {
+    var totalDone = 0;
+    ['setup', 'lab'].forEach(function (ph) {
+      var n = 0;
+      for (var i = 0; i < groups[ph].length; i++) {
+        var on = state.done[ph][i];
+        if (on) n++;
+        groups[ph][i].classList.toggle('done', on);
+        groups[ph][i].querySelector('input').checked = on;
+      }
+      totalDone += n;
+      var c = document.querySelector('.count[data-count="' + ph + '"]');
+      if (c) c.textContent = n + ' / 4 done';
+    });
+
+    tallyEl.textContent = totalDone + ' / 8';
+
+    var phase = state.done.setup.indexOf(false) !== -1 ? 'setup'
+              : state.done.lab.indexOf(false) !== -1 ? 'lab' : null;
+    if (!phase) {
       showText('  donE');
-      status.textContent = 'All four steps done. The board is ready to use.';
+      statusEl.textContent = 'All eight steps done. Your design is running on the board.';
     } else {
-      showText('StEP ' + (next + 1));
-      status.textContent = 'Step ' + (next + 1) + ' of 4: ' + STEP_NAMES[next];
+      var idx = state.done[phase].indexOf(false);
+      showText(CODE[phase] + '  ' + (idx + 1));
+      statusEl.textContent = LABEL[phase] + ', step ' + (idx + 1) + ' of 4: ' + PHASES[phase][idx] + '.';
     }
   }
 
-  Array.prototype.forEach.call(stepEls, function (el, i) {
-    el.querySelector('input').addEventListener('change', function (e) {
-      state.done[i] = e.target.checked;
+  ['setup', 'lab'].forEach(function (ph) {
+    Array.prototype.forEach.call(groups[ph], function (el, i) {
+      el.querySelector('input').addEventListener('change', function (e) {
+        state.done[ph][i] = e.target.checked;
+        renderProgress();
+        save();
+      });
+    });
+  });
+
+  Array.prototype.forEach.call(document.querySelectorAll('[data-reset]'), function (btn) {
+    btn.addEventListener('click', function () {
+      state.done[btn.getAttribute('data-reset')] = blank();
       renderProgress();
       save();
     });
   });
-
-  var input = document.getElementById('qdir');
-  input.value = state.typed;
-  input.addEventListener('input', function () {
-    state.typed = input.value;
-    state.q = cleanQ(input.value);
-    renderPaths();
-    save();
-  });
-  document.getElementById('qreset').addEventListener('click', function () {
-    input.value = DEFAULT_Q;
-    state.typed = DEFAULT_Q;
-    state.q = DEFAULT_Q;
-    renderPaths();
+  document.getElementById('resetall').addEventListener('click', function () {
+    state.done.setup = blank();
+    state.done.lab = blank();
+    renderProgress();
     save();
   });
 
+  // ---------- config fields ----------
+  var qIn = document.getElementById('qdir');
+  var pIn = document.getElementById('pdir');
+  var nIn = document.getElementById('pname');
+  var pFlag = document.getElementById('pflag');
+  var nFlag = document.getElementById('nflag');
+  var NAME_OK = /^[A-Za-z][A-Za-z0-9_]*$/;
+
+  function validate() {
+    var spaced = /\s/.test(state.p);
+    pFlag.classList.toggle('show', spaced);
+    pIn.setAttribute('aria-invalid', spaced ? 'true' : 'false');
+
+    var badName = !NAME_OK.test(state.n);
+    nFlag.classList.toggle('show', badName);
+    nIn.setAttribute('aria-invalid', badName ? 'true' : 'false');
+  }
+
+  function syncFields() {
+    qIn.value = state.typed.q;
+    pIn.value = state.typed.p;
+    nIn.value = state.typed.n;
+  }
+  syncFields();
+
+  qIn.addEventListener('input', function () { state.typed.q = qIn.value; state.q = cleanQ(qIn.value); renderPaths(); validate(); save(); });
+  pIn.addEventListener('input', function () { state.typed.p = pIn.value; state.p = cleanP(pIn.value); renderPaths(); validate(); save(); });
+  nIn.addEventListener('input', function () { state.typed.n = nIn.value; state.n = cleanN(nIn.value); renderPaths(); validate(); save(); });
+
+  document.getElementById('cfgreset').addEventListener('click', function () {
+    state.typed = { q: DEF.q, p: DEF.p, n: DEF.n };
+    state.q = DEF.q; state.p = DEF.p; state.n = DEF.n;
+    syncFields(); renderPaths(); validate(); save();
+  });
+
+  // ---------- copy ----------
   document.addEventListener('click', function (e) {
-    var btn = e.target.closest('.copy');
+    var btn = e.target.closest ? e.target.closest('.copy') : null;
     if (!btn) return;
     var code = btn.parentElement.querySelector('code');
     var text = code.textContent;
-    function done() {
+    function ok() {
+      var was = btn.textContent;
       btn.textContent = 'Copied';
-      setTimeout(function () { btn.textContent = 'Copy'; }, 1500);
+      setTimeout(function () { btn.textContent = was; }, 1500);
     }
     function fallback() {
       var range = document.createRange();
@@ -509,17 +830,37 @@
       var sel = window.getSelection();
       sel.removeAllRanges();
       sel.addRange(range);
-      try { document.execCommand('copy'); done(); } catch (err) {}
+      try { document.execCommand('copy'); ok(); } catch (err) {}
       sel.removeAllRanges();
     }
     if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(text).then(done, fallback);
+      navigator.clipboard.writeText(text).then(ok, fallback);
     } else {
       fallback();
     }
   });
 
+  // ---------- scroll spy ----------
+  var links = Array.prototype.slice.call(document.querySelectorAll('.subnav a'));
+  var watched = links.map(function (a) { return document.querySelector(a.getAttribute('href')); }).filter(Boolean);
+  function mark(id) {
+    links.forEach(function (a) {
+      a.setAttribute('aria-current', a.getAttribute('href') === '#' + id ? 'true' : 'false');
+    });
+  }
+  if ('IntersectionObserver' in window && watched.length) {
+    var seen = {};
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) { seen[en.target.id] = en.isIntersecting; });
+      for (var i = 0; i < watched.length; i++) {
+        if (seen[watched[i].id]) { mark(watched[i].id); return; }
+      }
+    }, { rootMargin: '-55px 0px -65% 0px' });
+    watched.forEach(function (s) { io.observe(s); });
+  }
+
   renderPaths();
+  validate();
   renderProgress();
 })();
 </script>

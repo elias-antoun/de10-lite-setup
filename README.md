@@ -1,128 +1,122 @@
-# DE10-Lite tools setup
+# DE10-Lite Guide
 
-Setup files and instructions for the **Terasic DE10-Lite** FPGA board with
+Setup files and lab instructions for the **Terasic DE10-Lite** FPGA board with
 **Quartus Prime Lite 25.1std** on Windows.
 
-### 👉 Students: follow the setup page
+Notre Dame University &ndash; Louaize.
+
+### 👉 Students: use the guide
 
 **<https://elias-antoun.github.io/de10-lite-setup/>**
 
-It walks you through the four steps, fills in the paths for your own Quartus
-installation, and lets you copy each path with one click. The written version is
-below if you prefer it.
+The page fills every path in for your own Quartus installation, project folder
+and project name, gives you a copy button on each one, and remembers which
+steps you have finished. The text below is the same material, for reference.
 
 ---
 
-## Before you start
+## Setup — once per PC
 
-- Install **Quartus Prime Lite 25.1std** with **MAX 10** device support. The
-  DE10-Lite uses a MAX 10 FPGA (`10M50DAF484C7G`); without that device family
-  installed, Quartus cannot compile for the board.
-- Download the setup zip from the page above (or from
-  [Releases](../../releases/latest)) and extract it. Right-click the zip and
-  choose **Extract All** first — don't run anything from inside the zip.
+1. Install **Quartus Prime Lite 25.1std** with **MAX 10** device support. The
+   DE10-Lite uses a `10M50DAF484C7G`; without that device family Quartus cannot
+   compile for the board.
+2. Download the setup zip from [Releases](../../releases/latest) and extract it.
+3. Copy `bin32` into your Quartus folder, next to the `bin64` already there —
+   `C:\altera_lite\25.1std\quartus\bin32` by default. The Control Panel is a
+   32-bit program and Quartus ships only 64-bit tools; `bin32` supplies the rest.
+4. Copy the `Tools` folder to `C:\DE10_Lite\Tools`. Neither tool has an installer.
+5. Plug the USB cable into the board's **USB-Blaster** port (`J3`, square type-B).
+   The board is powered over USB. LED `D4` *Power Good* lights up.
+6. Run `DE10_Lite_ControlPanel.exe` to confirm it all works.
 
-The zip contains:
+## Lab workflow — once per project
 
-| Folder   | What it is                                                            |
-| -------- | --------------------------------------------------------------------- |
-| `bin32/` | 32-bit support libraries that the Control Panel needs                  |
-| `Tools/` | `DE10_Lite_ControlPanel` and `DE10_Lite_SystemBuilder`                 |
+### 1. Create the project in System Builder
 
-## Setup
+Run `DE10_Lite_SystemBuilder.exe`. It generates a Quartus project with every
+DE10-Lite pin pre-assigned, so you never assign pins by hand.
 
-### 1. Copy `bin32` into Quartus
+- **Project Name:** `adder_top` — this becomes the top-level entity name.
+- **System Configuration:** tick **only** Switch ×10, LED ×10, 7-Segment ×6.
+  Leave CLOCK, Button, VGA, SDRAM, Accelerometer and Arduino Header off.
+- **2x20 GPIO Header:** None. **Prefix Name:** blank.
+- Click **Generate** and save to a folder **with no spaces in its path**,
+  e.g. `C:\fpga\adder_top`.
 
-Copy the `bin32` folder from the zip into your Quartus folder, **next to the
-`bin64` folder that is already there**:
+You get `adder_top.qpf`, `.qsf` (pins), `.sdc`, `.htm` (pin table) and
+`adder_top.v` — an empty wrapper with the ports declared.
 
-```
-C:\altera_lite\25.1std\quartus\bin32
-```
+### 2. Add the design
 
-That is the default install path for 25.1std. If you installed Quartus
-somewhere else, put `bin32` in whichever folder already contains `bin64`.
+Open the generated `adder_top.v`, delete its contents, paste in the full
+`adder_top.v` your instructor supplied (all four modules), and save. The file
+name and module name must match the project name exactly.
 
-> **Why:** the Control Panel is a 32-bit program, but Quartus only ships the
-> 64-bit tools. `bin32` gives it the pieces it needs to reach the board.
+### 3. Compile
 
-### 2. Copy the DE10-Lite tools
+Open `adder_top.qpf` in Quartus, then **Processing ▸ Start Compilation**. Wait
+for *Full Compilation was successful*.
 
-Copy the `Tools` folder from the zip to:
+In **Compilation Report ▸ Flow Summary** expect a few dozen logic elements and
+**Total pins = 68** (10 switches + 10 LEDs + 6×8 seven-segment lines). A
+different pin count means a System Builder tick was wrong.
 
-```
-C:\DE10_Lite\Tools
-```
+Clock and timing warnings are normal — this design has no clock. Output lands
+at `output_files\adder_top.sof`.
 
-### 3. Connect the board
+### 4. Program the board
 
-Plug the supplied USB cable into the board's **USB Blaster** port and into your
-PC. The board is powered over USB, so it needs no separate supply.
+**Tools ▸ Programmer**, then:
 
-### 4. Open the Control Panel
+1. **Hardware Setup…** → select `USB-Blaster [USB-0]` → **Close**. Mode: `JTAG`.
+2. If the file list is empty, **Add File…** → your `.sof`. Device reads
+   `10M50DAF484`; if asked to choose, pick `10M50DA`.
+3. Tick **Program/Configure** → **Start**.
 
-```
-C:\DE10_Lite\Tools\DE10_Lite_ControlPanel\DE10_Lite_ControlPanel.exe
-```
-
-When it connects, it loads its own design onto the FPGA and replaces whatever
-was there. That is expected — program your own design from Quartus again
-afterwards.
-
-To start a new Quartus project with the board's pin assignments already in
-place, run the System Builder. It works without the board connected.
-
-```
-C:\DE10_Lite\Tools\DE10_Lite_SystemBuilder\DE10_Lite_SystemBuilder.exe
-```
+Progress reaches 100% and LED `D2` (`CONF_DONE`) turns on. A `.sof` is
+**volatile** — it lives in the FPGA's RAM and is lost on power-off, which is
+what you want while testing.
 
 ## Troubleshooting
 
-**The Control Panel can't find the board**
+**Windows does not recognise the board.** Device Manager → right-click
+`USB-Blaster` → **Update driver** → **Browse my computer** → point at
+`C:\altera_lite\25.1std\quartus\drivers\usb-blaster` with *Include subfolders*
+ticked. Windows never finds this driver by itself; it ships with Quartus.
 
-1. Open Device Manager. If **USB-Blaster** has a yellow warning icon or appears
-   as an unknown device, right-click it → **Update driver** → **Browse my
-   computer for drivers**. Point it at the folder below and tick **Include
-   subfolders**:
+**Programmer or Control Panel cannot see the board.** Only one program can hold
+the USB-Blaster at a time — close the other one. Check `bin32` sits beside
+`bin64`. Try another port and another cable; charge-only cables have no data wires.
 
-   ```
-   C:\altera_lite\25.1std\quartus\drivers
-   ```
-
-2. Close the Quartus Programmer and anything else using the board, then reopen
-   the Control Panel. Only one program can hold the USB-Blaster at a time.
-3. Check that `bin32` sits in the same folder as `bin64` (step 1).
-4. Try a different USB port or cable.
-
-**I don't know where Quartus is installed**
-
-In the Start menu, right-click **Quartus Prime** → **More** → **Open file
-location**. Right-click the shortcut that appears and choose **Open file
-location** again. You land in a folder ending in `\quartus\bin64`. Paste that
-path into the box at the top of the setup page — it trims the
-`\quartus\bin64` part for you.
+**Compilation fails, or Total pins ≠ 68.** The module name inside the `.v` must
+match the project name exactly, including case. A wrong pin count means the
+System Builder ticks were off. Check the path has no spaces.
 
 ## Credits
 
 The DE10-Lite board, the Control Panel and the System Builder are made by
-[Terasic](https://www.terasic.com.tw/). Quartus Prime is made by Altera. They
-are redistributed here only to save students a download; all rights remain with
-their owners.
+[Terasic](https://www.terasic.com.tw/); the board diagram is Figure 1-2 from
+their user manual. Quartus Prime and MAX 10 are Altera products. Redistributed
+here for coursework only; all rights remain with their owners.
 
 ---
 
 <details>
 <summary>Maintainer notes</summary>
 
-**Updating the download.** The page's download button points at
+**Updating the download.** The page's button points at
 `releases/latest/download/DE10_Lite_Setup.zip`, which always resolves to the
-newest release. To publish a new zip, draft a new release and attach the file
-using that exact name — the link on the page never changes, and older releases
-stay available.
+newest release. To publish a new zip, draft a release and attach the file under
+that exact name — the link never changes and old releases stay available.
 
-**Editing the page.** Everything lives in `index.html`: no build step, no
-dependencies. Commit a change and GitHub Pages redeploys within a minute.
-`.nojekyll` tells Pages to serve the file as-is rather than running it through
-Jekyll.
+**Editing the page.** Everything is in `index.html`: no build step, no
+dependencies. `board.png` is the diagram. `.nojekyll` tells Pages to serve files
+as-is rather than running them through Jekyll. Commit and Pages redeploys within
+a minute.
+
+**Reusing the page for another lab.** Nothing is hard-coded to the adder. A
+student changes *Project name* at the top of the page and every path, filename
+and instruction updates. The only adder-specific text is the expected pin count
+of 68 in Lab step 3.
 
 </details>
