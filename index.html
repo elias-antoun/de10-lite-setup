@@ -260,6 +260,7 @@
 
   /* ---------- Screenshots ---------- */
   figure.shot { margin: 12px 0 4px; max-width: 540px; }
+  figure.shot.wide { max-width: 100%; }
   figure.shot a { display: block; border-radius: 6px; }
   figure.shot img {
     max-width: 100%; height: auto; display: block; background: #FFFFFF;
@@ -436,9 +437,9 @@
 <nav class="subnav" aria-label="Sections">
   <div class="subnav-inner">
     <span class="brand">Elias Antoun</span>
+    <a href="#board">Board</a>
     <a href="#setup">Setup</a>
     <a href="#lab">Lab</a>
-    <a href="#board">Board</a>
     <a href="#signals">Signals</a>
     <a href="#help">Help</a>
     <span class="tally" id="tally"></span>
@@ -446,6 +447,24 @@
 </nav>
 
 <main id="main">
+
+  <!-- ============ BOARD ============ -->
+  <section id="board" aria-labelledby="board-h">
+    <h2 id="board-h">The board</h2>
+    <p class="sub">Where everything is, for when an instruction says "the USB-Blaster port" and you are staring at the hardware.</p>
+    <figure class="board">
+      <img src="img/board.png" width="1135" height="725" loading="lazy" decoding="async"
+           alt="Top view of the DE10-Lite board with labels: 2x20 GPIO and Altera MAX 10 10M50DAF484C7G across the top, Accelerometer and 4-bit resistor VGA upper right, Arduino connector, 5V power USB-Blaster and 64MB SDRAM down the left side, 5V/GND 2-pin header and six 7-segment displays along the bottom left, and ten switches, ten LEDs and two buttons along the bottom right.">
+      <figcaption>DE10-Lite, top view. Figure 1-2 from the Terasic user manual.</figcaption>
+    </figure>
+    <dl class="facts">
+      <dt>FPGA</dt><dd>Altera MAX 10, <code class="inline">10M50DAF484C7G</code></dd>
+      <dt>Inputs</dt><dd>10 slide switches (<code class="inline">SW</code>), 2 push buttons (<code class="inline">KEY</code>)</dd>
+      <dt>Outputs</dt><dd>10 red LEDs (<code class="inline">LEDR</code>), 6 seven-segment displays (<code class="inline">HEX</code>)</dd>
+      <dt>Programming</dt><dd>USB-Blaster over connector <code class="inline">J3</code>, which also powers the board</dd>
+      <dt>Status LEDs</dt><dd><code class="inline">D4</code> Power Good &middot; <code class="inline">D2</code> CONF_DONE, lights once a design is loaded</dd>
+    </dl>
+  </section>
 
   <section class="config" aria-labelledby="cfg-h">
     <h2 id="cfg-h">Your folders</h2>
@@ -556,7 +575,15 @@
           <h3>Create the project in System Builder</h3>
           <p>Run System Builder &mdash; it generates a Quartus project with every DE10-Lite pin already assigned, so you never assign pins by hand:</p>
           <div class="path"><code>C:\DE10_Lite\Tools\DE10_Lite_SystemBuilder\DE10_Lite_SystemBuilder.exe</code><button class="copy" type="button" aria-label="Copy path">Copy</button></div>
-          <p>Set <span class="ui">Project Name</span> to <code class="inline" data-path="{N}"></code>, then tick <em>only</em> these:</p>
+          <p>Set <span class="ui">Project Name</span> to <code class="inline" data-path="{N}"></code>, then fix the peripherals. It does <em>not</em> open in the state you want &mdash; <strong>CLOCK is ticked by default</strong> and has to come off:</p>
+          <figure class="shot wide">
+            <a href="img/system-builder.png" target="_blank" rel="noopener" title="Open full size">
+              <img src="img/system-builder.png" width="992" height="655" loading="lazy" decoding="async"
+                   alt="The DE10-Lite System Builder window. On the right, System Configuration shows the project name field outlined in blue, CLOCK ticked and outlined in red with an untick label beside it, and 7-Segment x 6, LED x 10 and Switch x 10 ticked and outlined in green. Button, Accelerometer, VGA, SDRAM and Arduino Header are all unticked. The GPIO header is set to None and Prefix Name is empty.">
+            </a>
+            <figcaption>System Builder as it opens. <strong>Red</strong>: untick CLOCK. <strong>Green</strong>: leave these three ticked. <strong>Blue</strong>: your project name.</figcaption>
+          </figure>
+          <p>You are aiming for exactly this:</p>
 
           <div class="syscfg">
             <p class="syscfg-title">System Configuration</p>
@@ -712,24 +739,6 @@
         </div>
       </li>
     </ol>
-  </section>
-
-  <!-- ============ BOARD ============ -->
-  <section id="board" aria-labelledby="board-h">
-    <h2 id="board-h">The board</h2>
-    <p class="sub">Where everything is, for when an instruction says "the USB-Blaster port" and you are staring at the hardware.</p>
-    <figure class="board">
-      <img src="img/board.png" width="1135" height="725" loading="lazy" decoding="async"
-           alt="Top view of the DE10-Lite board with labels: 2x20 GPIO and Altera MAX 10 10M50DAF484C7G across the top, Accelerometer and 4-bit resistor VGA upper right, Arduino connector, 5V power USB-Blaster and 64MB SDRAM down the left side, 5V/GND 2-pin header and six 7-segment displays along the bottom left, and ten switches, ten LEDs and two buttons along the bottom right.">
-      <figcaption>DE10-Lite, top view. Figure 1-2 from the Terasic user manual.</figcaption>
-    </figure>
-    <dl class="facts">
-      <dt>FPGA</dt><dd>Altera MAX 10, <code class="inline">10M50DAF484C7G</code></dd>
-      <dt>Inputs</dt><dd>10 slide switches (<code class="inline">SW</code>), 2 push buttons (<code class="inline">KEY</code>)</dd>
-      <dt>Outputs</dt><dd>10 red LEDs (<code class="inline">LEDR</code>), 6 seven-segment displays (<code class="inline">HEX</code>)</dd>
-      <dt>Programming</dt><dd>USB-Blaster over connector <code class="inline">J3</code>, which also powers the board</dd>
-      <dt>Status LEDs</dt><dd><code class="inline">D4</code> Power Good &middot; <code class="inline">D2</code> CONF_DONE, lights once a design is loaded</dd>
-    </dl>
   </section>
 
   <!-- ============ SIGNALS ============ -->
@@ -1214,14 +1223,6 @@
       }
     });
 
-    var pending = false;
-    var onScroll = function () {
-      if (pending) return;
-      pending = true;
-      requestAnimationFrame(function () { pending = false; renderBar(); });
-    };
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onScroll);
   }
 
   // ---------- scroll spy ----------
@@ -1232,20 +1233,35 @@
       a.setAttribute('aria-current', a.getAttribute('href') === '#' + id ? 'true' : 'false');
     });
   }
-  if ('IntersectionObserver' in window && watched.length) {
-    var seen = {};
-    var io = new IntersectionObserver(function (entries) {
-      entries.forEach(function (en) { seen[en.target.id] = en.isIntersecting; });
-      for (var i = 0; i < watched.length; i++) {
-        if (seen[watched[i].id]) { mark(watched[i].id); return; }
-      }
-    }, { rootMargin: '-55px 0px -65% 0px' });
-    watched.forEach(function (s) { io.observe(s); });
+  function spy() {
+    if (!watched.length) return;
+    // The last section is too short to ever reach the top of the viewport, so once the
+    // document is scrolled to its end that section is the one being read.
+    if (window.innerHeight + window.pageYOffset >= document.documentElement.scrollHeight - 4) {
+      mark(watched[watched.length - 1].id);
+      return;
+    }
+    var line = 72, best = watched[0], bestTop = -Infinity;
+    for (var i = 0; i < watched.length; i++) {
+      var top = watched[i].getBoundingClientRect().top;
+      if (top <= line && top > bestTop) { bestTop = top; best = watched[i]; }
+    }
+    mark(best.id);
   }
+
+  var pending = false;
+  function onScroll() {
+    if (pending) return;
+    pending = true;
+    requestAnimationFrame(function () { pending = false; renderBar(); spy(); });
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll);
 
   renderPaths();
   validate();
   renderProgress();
+  spy();
 })();
 </script>
 </body>

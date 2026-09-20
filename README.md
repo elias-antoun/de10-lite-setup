@@ -38,7 +38,9 @@ DE10-Lite pin pre-assigned, so you never assign pins by hand.
 
 - **Project Name:** `adder_top` — this becomes the top-level entity name.
 - **System Configuration:** tick **only** Switch ×10, LED ×10, 7-Segment ×6.
-  Leave CLOCK, Button, VGA, SDRAM, Accelerometer and Arduino Header off.
+  Leave Button, VGA, SDRAM, Accelerometer and Arduino Header off. Note that
+  **CLOCK is already ticked when the dialog opens** — untick it, since the adder
+  is combinational and has no clock.
 - **2x20 GPIO Header:** None. **Prefix Name:** blank.
 - Click **Generate** and save to a folder **with no spaces in its path**,
   e.g. `C:\fpga\adder_top`.
