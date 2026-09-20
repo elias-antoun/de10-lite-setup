@@ -18,8 +18,7 @@ steps you have finished. The text below is the same material, for reference.
 ## Setup — once per PC
 
 1. Install [**Quartus Prime Lite 25.1std** for Windows](https://www.altera.com/downloads/fpga-development-tools/quartus-prime-lite-edition-design-software-version-25-1-windows).
-   The Lite edition is free and needs no licence. It is a large download and a
-   slow install — do it before the lab, not during.
+   The Lite edition is free and needs no licence.
 
    **Tick MAX 10 FPGA in the device family list while installing.** Quartus
    installs quite happily without it and then cannot compile for the board at
