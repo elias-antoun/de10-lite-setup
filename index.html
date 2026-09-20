@@ -59,7 +59,10 @@
   }
 
   * { box-sizing: border-box; }
-  html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+  html {
+    -webkit-text-size-adjust: 100%; scroll-behavior: smooth;
+    scroll-padding-top: 62px; scroll-padding-bottom: 84px;
+  }
   body {
     margin: 0;
     background: var(--paper);
@@ -114,7 +117,7 @@
   /* ---------- Sticky sub-nav ---------- */
   .subnav {
     position: sticky; top: 0; z-index: 20;
-    background: color-mix(in srgb, var(--paper) 88%, transparent);
+    background: color-mix(in srgb, var(--paper) 97%, transparent);
     -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
     border-bottom: 1px solid var(--line);
   }
@@ -286,6 +289,49 @@
   }
   footer p { margin: 0 0 8px; }
 
+  /* ---------- Sticky step bar ---------- */
+  .stepbar {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
+    background: color-mix(in srgb, var(--surface) 97%, transparent);
+    -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+    border-top: 1px solid var(--line);
+    box-shadow: 0 -6px 26px rgba(16, 36, 74, 0.10);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @supports not ((backdrop-filter: blur(4px)) or (-webkit-backdrop-filter: blur(4px))) {
+    .stepbar { background: var(--surface); }
+  }
+  .stepbar[hidden] { display: none; }
+  .stepbar-inner {
+    max-width: 780px; margin: 0 auto; padding: 9px 20px;
+    display: flex; align-items: center; gap: 13px; min-height: 62px;
+  }
+  .sb-led {
+    flex: none; width: 13px; height: 13px; border-radius: 50%;
+    background: var(--led-off); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.10);
+    transition: background 0.2s, box-shadow 0.2s;
+  }
+  .sb-led.on { background: var(--led); box-shadow: 0 0 10px rgba(255, 61, 46, 0.7); }
+  .sb-where { flex: 1; min-width: 0; line-height: 1.35; }
+  #sbtitle { display: block; font-weight: 700; font-size: 0.95rem; }
+  .sb-sub {
+    display: block; font-size: 0.85rem; color: var(--muted);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .sb-btn {
+    flex: none; border: 0; border-radius: 6px; cursor: pointer;
+    background: var(--mask); color: #FFFFFF;
+    font: inherit; font-weight: 700; font-size: 0.93rem; padding: 11px 17px;
+  }
+  .sb-btn:hover { background: var(--mask-deep); }
+  .sb-btn.ghost { background: transparent; color: var(--ink); box-shadow: inset 0 0 0 1px var(--line); }
+  .sb-btn.ghost:hover { background: var(--paper); }
+  .sb-btn[disabled] { opacity: 0.55; cursor: default; }
+  @media (max-width: 420px) {
+    .stepbar-inner { gap: 10px; padding: 9px 16px; }
+    .sb-btn { padding: 11px 13px; font-size: 0.89rem; }
+  }
+
   @media (max-width: 860px) {
     .hero-inner { grid-template-columns: 1fr; padding: 36px 20px 36px; gap: 30px; }
   }
@@ -294,7 +340,7 @@
     * { transition: none !important; }
   }
   @media print {
-    .subnav, .download, .done-toggle, .copy, .config-actions, .btn-quiet, .skip { display: none !important; }
+    .subnav, .stepbar, .download, .done-toggle, .copy, .config-actions, .btn-quiet, .skip { display: none !important; }
     .hero { background: none; color: #000; }
     .hero-inner { display: block; padding: 0 0 18px; }
     .eyebrow, .lede, .display figcaption { color: #333; }
@@ -595,6 +641,17 @@
   <p><button class="btn-quiet" type="button" id="resetall">Reset all progress</button></p>
 </footer>
 
+<div class="stepbar" id="stepbar" hidden>
+  <div class="stepbar-inner">
+    <span class="sb-led" id="sbled" aria-hidden="true"></span>
+    <span class="sb-where">
+      <span id="sbtitle"></span>
+      <span class="sb-sub" id="sbsub"></span>
+    </span>
+    <button class="sb-btn" type="button" id="sbbtn"></button>
+  </div>
+</div>
+
 <script>
 (function () {
   'use strict';
@@ -752,6 +809,8 @@
       showText(CODE[phase] + '  ' + (idx + 1));
       statusEl.textContent = LABEL[phase] + ', step ' + (idx + 1) + ' of 4: ' + PHASES[phase][idx] + '.';
     }
+
+    renderBar();
   }
 
   ['setup', 'lab'].forEach(function (ph) {
@@ -839,6 +898,106 @@
       fallback();
     }
   });
+
+  // ---------- sticky step bar ----------
+  var bar = document.getElementById('stepbar');
+  var sbLed = document.getElementById('sbled');
+  var sbTitle = document.getElementById('sbtitle');
+  var sbSub = document.getElementById('sbsub');
+  var sbBtn = document.getElementById('sbbtn');
+
+  var flat = [];
+  ['setup', 'lab'].forEach(function (ph) {
+    Array.prototype.forEach.call(groups[ph], function (el, i) { flat.push({ ph: ph, i: i, el: el }); });
+  });
+  var current = 0;
+
+  function isDone(s) { return state.done[s.ph][s.i]; }
+
+  function nextOpen(from) {
+    var k;
+    for (k = from + 1; k < flat.length; k++) if (!isDone(flat[k])) return k;
+    for (k = 0; k < flat.length; k++) if (k !== from && !isDone(flat[k])) return k;
+    return -1;
+  }
+
+  // Which step owns the reading line -- and whether any step is on screen at all.
+  function locate() {
+    if (!flat.length) return -1;
+    var vh = window.innerHeight;
+    var first = flat[0].el.getBoundingClientRect();
+    var last = flat[flat.length - 1].el.getBoundingClientRect();
+    if (last.bottom < 70 || first.top > vh - 70) return -1;
+    var line = vh * 0.45;
+    var best = 0, bestD = Infinity;
+    for (var k = 0; k < flat.length; k++) {
+      var r = flat[k].el.getBoundingClientRect();
+      if (r.top <= line && r.bottom >= line) return k;
+      var d = r.top > line ? r.top - line : line - r.bottom;
+      if (d < bestD) { bestD = d; best = k; }
+    }
+    return best;
+  }
+
+  function renderBar() {
+    if (!bar) return;
+    var k = locate();
+    if (k < 0) { bar.hidden = true; return; }
+    bar.hidden = false;
+    current = k;
+
+    var s = flat[k];
+    var done = isDone(s);
+    sbLed.classList.toggle('on', done);
+    sbTitle.textContent = LABEL[s.ph] + ' \u00b7 step ' + (s.i + 1) + ' of 4';
+    sbSub.textContent = PHASES[s.ph][s.i];
+
+    if (!done) {
+      sbBtn.textContent = 'Mark done';
+      sbBtn.className = 'sb-btn';
+      sbBtn.disabled = false;
+      sbBtn.setAttribute('aria-label',
+        'Mark ' + LABEL[s.ph] + ' step ' + (s.i + 1) + ', ' + PHASES[s.ph][s.i] + ', as done');
+      return;
+    }
+
+    var nx = nextOpen(k);
+    sbBtn.className = 'sb-btn ghost';
+    if (nx < 0) {
+      sbBtn.textContent = 'All 8 done';
+      sbBtn.disabled = true;
+      sbBtn.removeAttribute('aria-label');
+    } else {
+      sbBtn.disabled = false;
+      sbBtn.textContent = nx > k ? 'Next step \u2193' : 'Unfinished \u2191';
+      sbBtn.setAttribute('aria-label',
+        'Go to ' + LABEL[flat[nx].ph] + ' step ' + (flat[nx].i + 1) + ', ' + PHASES[flat[nx].ph][flat[nx].i]);
+    }
+  }
+
+  if (bar) {
+    sbBtn.addEventListener('click', function () {
+      var s = flat[current];
+      if (!s) return;
+      if (!isDone(s)) {
+        state.done[s.ph][s.i] = true;
+        renderProgress();
+        save();
+      } else {
+        var nx = nextOpen(current);
+        if (nx >= 0) flat[nx].el.scrollIntoView({ block: 'center' });
+      }
+    });
+
+    var pending = false;
+    var onScroll = function () {
+      if (pending) return;
+      pending = true;
+      requestAnimationFrame(function () { pending = false; renderBar(); });
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+  }
 
   // ---------- scroll spy ----------
   var links = Array.prototype.slice.call(document.querySelectorAll('.subnav a'));
