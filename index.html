@@ -225,31 +225,6 @@
   }
   .done-toggle input { width: 20px; height: 20px; margin: 0; accent-color: var(--led); cursor: pointer; }
 
-  /* ---------- System Builder mock panel ---------- */
-  .syscfg { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px 18px; margin: 0 0 14px; }
-  .syscfg-title { font-weight: 700; font-size: 0.95rem; margin: 0 0 12px; }
-  .syscfg-cols { display: grid; gap: 18px; margin-bottom: 16px; }
-  @media (min-width: 560px) { .syscfg-cols { grid-template-columns: 1fr 1fr; gap: 24px; } }
-  .syscfg-sub {
-    font-size: 0.78rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
-    color: var(--muted); margin: 0 0 9px;
-  }
-  .syscfg-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
-  .syscfg-list li {
-    display: flex; align-items: center; gap: 9px; font-size: 0.94rem;
-    padding: 5px 9px; border-radius: 5px;
-  }
-  .syscfg-list li.on { background: var(--ok-bg); color: var(--ink); font-weight: 700; }
-  .syscfg-list li.off { color: var(--muted); }
-  .syscfg-list li.off .lbl { text-decoration: line-through; text-decoration-thickness: 1px; }
-  .mark { flex: none; width: 17px; text-align: center; font-weight: 700; }
-  .on .mark { color: var(--ok); }
-  .off .mark { color: var(--muted); }
-  .qty { margin-left: auto; font: 500 0.82rem/1 "JetBrains Mono", ui-monospace, monospace; opacity: 0.8; }
-  .syscfg-extra { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 5px 12px; font-size: 0.92rem; }
-  .syscfg-extra dt { font-weight: 700; }
-  .syscfg-extra dd { margin: 0; color: var(--muted); }
-
   /* ---------- Screenshots ---------- */
   figure.shot { margin: 12px 0 4px; max-width: 540px; }
   figure.shot.wide { max-width: 100%; }
@@ -573,36 +548,6 @@
             </a>
             <figcaption>System Builder as it opens. <strong>Red</strong>: untick CLOCK. <strong>Green</strong>: leave these three ticked. <strong>Blue</strong>: your project name.</figcaption>
           </figure>
-          <p>You are aiming for exactly this:</p>
-
-          <div class="syscfg">
-            <p class="syscfg-title">System Configuration</p>
-            <div class="syscfg-cols">
-              <div>
-                <p class="syscfg-sub">Tick these three</p>
-                <ul class="syscfg-list">
-                  <li class="on"><span class="mark">&#10003;</span> Switch <span class="qty">x10</span></li>
-                  <li class="on"><span class="mark">&#10003;</span> LED <span class="qty">x10</span></li>
-                  <li class="on"><span class="mark">&#10003;</span> 7-Segment <span class="qty">x6</span></li>
-                </ul>
-              </div>
-              <div>
-                <p class="syscfg-sub">Leave all of these off</p>
-                <ul class="syscfg-list">
-                  <li class="off"><span class="mark">&times;</span> <span class="lbl">CLOCK</span></li>
-                  <li class="off"><span class="mark">&times;</span> <span class="lbl">Button</span></li>
-                  <li class="off"><span class="mark">&times;</span> <span class="lbl">VGA</span></li>
-                  <li class="off"><span class="mark">&times;</span> <span class="lbl">SDRAM</span></li>
-                  <li class="off"><span class="mark">&times;</span> <span class="lbl">Accelerometer</span></li>
-                  <li class="off"><span class="mark">&times;</span> <span class="lbl">Arduino Header</span></li>
-                </ul>
-              </div>
-            </div>
-            <dl class="syscfg-extra">
-              <dt>2x20 GPIO Header</dt><dd>None</dd>
-              <dt>Prefix Name</dt><dd>leave blank</dd>
-            </dl>
-          </div>
 
           <p>Click <span class="ui">Generate</span> and save into a folder with <strong>no spaces in its path</strong>:</p>
           <div class="path"><code data-path="{P}"></code><button class="copy" type="button" aria-label="Copy path">Copy</button></div>
