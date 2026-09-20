@@ -3,7 +3,7 @@
 Setup files and lab instructions for the **Terasic DE10-Lite** FPGA board with
 **Quartus Prime Lite 25.1std** on Windows.
 
-Notre Dame University &ndash; Louaize.
+By **Elias Antoun** &mdash; Notre Dame University &ndash; Louaize.
 
 ### 👉 Students: use the guide
 
@@ -77,6 +77,40 @@ Progress reaches 100% and LED `D2` (`CONF_DONE`) turns on. A `.sof` is
 **volatile** — it lives in the FPGA's RAM and is lost on power-off, which is
 what you want while testing.
 
+## Signals
+
+Taken from the *DE10-Lite User Manual* (Terasic, 17 October 2022). Get these
+backwards and the board does something baffling rather than nothing.
+
+| Peripheral | Polarity |
+| --- | --- |
+| 7-segment displays | **Active LOW** — common anode, so `0` lights a segment |
+| LEDs (`LEDR`) | **Active HIGH** — `1` lights the LED |
+| Slide switches (`SW`) | Up = `1`, down (toward the board edge) = `0` |
+| Push-buttons (`KEY`) | **Active LOW** — `0` while held; debounced in hardware |
+
+**Segment bits.** Each `HEX` port is 8 bits wide:
+
+| Bit | Segment | | Bit | Segment |
+| --- | --- | --- | --- | --- |
+| `[0]` | top | | `[4]` | lower left |
+| `[1]` | upper right | | `[5]` | upper left |
+| `[2]` | lower right | | `[6]` | middle |
+| `[3]` | bottom | | `[7]` | decimal point |
+
+So a `0` is every segment except the middle bar and the point — and since the
+displays are active low, that is `8'hC0`. `HEX0` is the rightmost display,
+`HEX5` the leftmost.
+
+**Clocks** — not used by the adder, which is why CLOCK stays unticked and
+Quartus warns about undefined clocks. Anything sequential needs one of these:
+
+| Signal | Pin | Frequency |
+| --- | --- | --- |
+| `MAX10_CLK1_50` | `PIN_P11` | 50 MHz |
+| `MAX10_CLK2_50` | `PIN_N14` | 50 MHz |
+| `ADC_CLK_10` | `PIN_N5` | 10 MHz, feeds the ADC PLLs |
+
 ## Troubleshooting
 
 **Windows does not recognise the board.** Device Manager → right-click
@@ -88,16 +122,26 @@ ticked. Windows never finds this driver by itself; it ships with Quartus.
 the USB-Blaster at a time — close the other one. Check `bin32` sits beside
 `bin64`. Try another port and another cable; charge-only cables have no data wires.
 
+**My design disappears when I unplug the board.** Normal. A `.sof` programmed
+over JTAG lives in the FPGA's configuration RAM and is gone at power-off. To
+survive a power cycle the design must go into the configuration flash (CFM) as
+a `.pof`, which needs a Dual Configuration IP and the Convert Programming Files
+step — Chapter 6 of the Terasic manual covers it. For lab work, just re-program.
+
 **Compilation fails, or Total pins ≠ 68.** The module name inside the `.v` must
 match the project name exactly, including case. A wrong pin count means the
 System Builder ticks were off. Check the path has no spaces.
 
 ## Credits
 
-The DE10-Lite board, the Control Panel and the System Builder are made by
-[Terasic](https://www.terasic.com.tw/); the board diagram is Figure 1-2 from
-their user manual. Quartus Prime and MAX 10 are Altera products. Redistributed
-here for coursework only; all rights remain with their owners.
+Written and maintained by **Elias Antoun**, Notre Dame University &ndash; Louaize.
+
+Pin assignments, signal polarity and the board diagram (Figure 1-2) are taken
+from the *DE10-Lite User Manual* (Terasic, 17 October 2022). The DE10-Lite
+board, the Control Panel and the System Builder are made by
+[Terasic](https://www.terasic.com.tw/); Quartus Prime and MAX 10 are Altera
+products. Redistributed here for coursework only; all rights remain with their
+owners.
 
 ---
 
