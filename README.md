@@ -17,9 +17,16 @@ steps you have finished. The text below is the same material, for reference.
 
 ## Setup — once per PC
 
-1. Install **Quartus Prime Lite 25.1std** with **MAX 10** device support. The
-   DE10-Lite uses a `10M50DAF484C7G`; without that device family Quartus cannot
-   compile for the board.
+1. Install [**Quartus Prime Lite 25.1std** for Windows](https://www.altera.com/downloads/fpga-development-tools/quartus-prime-lite-edition-design-software-version-25-1-windows).
+   The Lite edition is free and needs no licence. It is a large download and a
+   slow install — do it before the lab, not during.
+
+   **Tick MAX 10 FPGA in the device family list while installing.** Quartus
+   installs quite happily without it and then cannot compile for the board at
+   all; the DE10-Lite's chip is a MAX 10 (`10M50DAF484C7G`). If you already
+   installed Quartus without it, **Tools ▸ Install Devices** adds a family to an
+   existing installation — no need to start over. A different Quartus version
+   works too, but its folder paths differ from the ones below.
 2. Download the setup zip from [Releases](../../releases/latest) and extract it.
 3. Copy `bin32` into your Quartus folder, next to the `bin64` already there —
    `C:\altera_lite\25.1std\quartus\bin32` by default. The Control Panel is a
@@ -131,8 +138,10 @@ survive a power cycle the design must go into the configuration flash (CFM) as
 a `.pof`, which needs a Dual Configuration IP and the Convert Programming Files
 step — Chapter 6 of the Terasic manual covers it. For lab work, just re-program.
 
-**Compilation fails, or Total pins ≠ 68.** The module name inside the `.v` must
-match the project name exactly, including case. A wrong pin count means the
+**Compilation fails, or Total pins ≠ 68.** If Quartus does not offer the MAX 10
+family or the `10M50DAF484C7G` device at all, MAX 10 support was never installed
+— add it with **Tools ▸ Install Devices**. Otherwise: the module name inside the
+`.v` must match the project name exactly, including case. A wrong pin count means the
 System Builder ticks were off. Check the path has no spaces.
 
 ## Credits

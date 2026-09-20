@@ -280,7 +280,8 @@
     flex: none; font-weight: 700; font-size: 0.93rem; color: var(--ink);
     padding-right: 13px; margin-right: 9px; border-right: 1px solid var(--line);
   }
-  @media (max-width: 880px) { .brand { display: none; } }
+  .brand-sep { color: var(--muted); font-weight: 400; margin: 0 2px; }
+  @media (max-width: 1000px) { .brand { display: none; } }
 
   /* ---------- Signals ---------- */
   .callout {
@@ -402,7 +403,7 @@
 
 <nav class="subnav" aria-label="Sections">
   <div class="subnav-inner">
-    <span class="brand">Elias Antoun</span>
+    <span class="brand">DE10-Lite <span class="brand-sep">&middot;</span> Elias Antoun</span>
     <a href="#board">Board</a>
     <a href="#setup">Setup</a>
     <a href="#lab">Lab</a>
@@ -475,6 +476,16 @@
       <li class="step">
         <div class="led" aria-hidden="true">1</div>
         <div>
+          <h3>Install Quartus Prime Lite</h3>
+          <p>Download and install <a href="https://www.altera.com/downloads/fpga-development-tools/quartus-prime-lite-edition-design-software-version-25-1-windows">Quartus Prime Lite 25.1std for Windows</a>. The Lite edition is free and needs no licence. It is a large download and a slow install, so do it before the lab rather than during it.</p>
+          <p><strong>Tick MAX 10 FPGA in the device family list while installing.</strong> This is the one that catches people: Quartus installs quite happily without it and then cannot compile for the board at all. The DE10-Lite's chip is a MAX 10, <code class="inline">10M50DAF484C7G</code>.</p>
+          <p class="why">Already installed Quartus without it? You do not need to start over &mdash; <span class="ui">Tools &#9656; Install Devices</span> adds a device family to an existing installation. A different Quartus version is fine too; set <a href="#cfg-h">your Quartus folder</a> above and every path on this page follows it.</p>
+          <label class="done-toggle"><input type="checkbox"> Mark as done</label>
+        </div>
+      </li>
+      <li class="step">
+        <div class="led" aria-hidden="true">2</div>
+        <div>
           <h3>Copy bin32 into Quartus</h3>
           <p>Extract the zip, then copy the <code class="inline">bin32</code> folder into your Quartus folder, next to the <code class="inline">bin64</code> folder already there:</p>
           <div class="path"><code data-path="{Q}\quartus\bin32"></code><button class="copy" type="button" aria-label="Copy path">Copy</button></div>
@@ -483,7 +494,7 @@
         </div>
       </li>
       <li class="step">
-        <div class="led" aria-hidden="true">2</div>
+        <div class="led" aria-hidden="true">3</div>
         <div>
           <h3>Copy the DE10-Lite tools</h3>
           <p>Copy the <code class="inline">Tools</code> folder from the zip so you end up with:</p>
@@ -493,7 +504,7 @@
         </div>
       </li>
       <li class="step">
-        <div class="led" aria-hidden="true">3</div>
+        <div class="led" aria-hidden="true">4</div>
         <div>
           <h3>Connect the board</h3>
           <p>Plug the supplied USB cable into the board's <strong>USB-Blaster</strong> port &mdash; connector <code class="inline">J3</code>, the square type-B socket on the left edge. The board is powered over USB and needs no separate supply.</p>
@@ -502,7 +513,7 @@
         </div>
       </li>
       <li class="step">
-        <div class="led" aria-hidden="true">4</div>
+        <div class="led" aria-hidden="true">5</div>
         <div>
           <h3>Check it works</h3>
           <p>Run the Control Panel:</p>
@@ -784,6 +795,7 @@
     <details>
       <summary>Compilation fails, or Total pins is not 68</summary>
       <ol>
+        <li>If Quartus does not offer the MAX 10 family or the <code class="inline">10M50DAF484C7G</code> device at all, MAX 10 support was never installed. Add it with <span class="ui">Tools &#9656; Install Devices</span> &mdash; setup step 1.</li>
         <li>The module name inside your <code class="inline">.v</code> file must match the project name (<code class="inline" data-path="{N}"></code>) exactly, including case.</li>
         <li>A wrong pin count means the System Builder ticks were off. Re-run step 1 with only Switch, LED and 7-Segment ticked, and paste your design in again.</li>
         <li>Check the path has no spaces in it.</li>
@@ -831,20 +843,22 @@
 
   var DEF = { q: 'C:\\altera_lite\\25.1std', p: 'C:\\fpga\\adder_top', n: 'adder_top' };
   var PHASES = {
-    setup: ['copy bin32 into Quartus', 'copy the DE10-Lite tools', 'connect the board', 'check it works'],
+    setup: ['install Quartus Prime Lite', 'copy bin32 into Quartus', 'copy the DE10-Lite tools',
+            'connect the board', 'check it works'],
     lab: ['create the project in System Builder', 'add the design', 'compile', 'program the board']
   };
   var LABEL = { setup: 'Setup', lab: 'Lab workflow' };
   var SHORT = { setup: 'Setup', lab: 'Lab' };
   var CODE = { setup: 'SEt', lab: 'LAb' };
-  var KEY = 'de10lite-guide-v2';
-  var OLDKEY = 'de10lite-setup-v1';
+  var TOTAL = PHASES.setup.length + PHASES.lab.length;
+  var KEY = 'de10lite-guide-v3';
+  var OLDKEY = 'de10lite-guide-v2';
 
-  function blank() { return [false, false, false, false]; }
+  function blank(ph) { return PHASES[ph].map(function () { return false; }); }
   var state = {
     typed: { q: DEF.q, p: DEF.p, n: DEF.n },
     q: DEF.q, p: DEF.p, n: DEF.n,
-    done: { setup: blank(), lab: blank() }
+    done: { setup: blank('setup'), lab: blank('lab') }
   };
 
   // ---------- cleaners ----------
@@ -867,17 +881,28 @@
       }
       if (raw.done) {
         ['setup', 'lab'].forEach(function (ph) {
-          if (Array.isArray(raw.done[ph])) state.done[ph] = blank().map(function (_, i) { return !!raw.done[ph][i]; });
+          if (Array.isArray(raw.done[ph])) state.done[ph] = blank(ph).map(function (_, i) { return !!raw.done[ph][i]; });
         });
       }
       return;
     }
-    // migrate from the first version of this page
+    // Migrate the previous layout, where setup had four steps and installing Quartus
+    // was assumed rather than tracked. Everything shifts along by one.
     try {
       var old = JSON.parse(localStorage.getItem(OLDKEY) || 'null');
-      if (old) {
-        if (typeof old.typed === 'string' && old.typed.trim()) { state.typed.q = old.typed; state.q = cleanQ(old.typed); }
-        if (Array.isArray(old.done)) state.done.setup = blank().map(function (_, i) { return !!old.done[i]; });
+      if (!old) return;
+      if (old.typed) {
+        if (typeof old.typed.q === 'string' && old.typed.q.trim()) { state.typed.q = old.typed.q; state.q = cleanQ(old.typed.q); }
+        if (typeof old.typed.p === 'string' && old.typed.p.trim()) { state.typed.p = old.typed.p; state.p = cleanP(old.typed.p); }
+        if (typeof old.typed.n === 'string' && old.typed.n.trim()) { state.typed.n = old.typed.n; state.n = cleanN(old.typed.n); }
+      }
+      if (old.done && Array.isArray(old.done.setup)) {
+        // anyone who had started the old setup necessarily had Quartus installed already
+        var moved = [old.done.setup.some(Boolean)].concat(old.done.setup.map(Boolean));
+        state.done.setup = blank('setup').map(function (_, i) { return !!moved[i]; });
+      }
+      if (old.done && Array.isArray(old.done.lab)) {
+        state.done.lab = blank('lab').map(function (_, i) { return !!old.done.lab[i]; });
       }
     } catch (e) {}
   }
@@ -965,18 +990,18 @@
       }
       totalDone += n;
       var c = document.querySelector('.count[data-count="' + ph + '"]');
-      if (c) c.textContent = n + ' / 4 done';
+      if (c) c.textContent = n + ' / ' + PHASES[ph].length + ' done';
     });
 
-    tallyEl.textContent = totalDone + ' / 8';
+    tallyEl.textContent = totalDone + ' / ' + TOTAL;
 
     var phase = state.done.setup.indexOf(false) !== -1 ? 'setup'
               : state.done.lab.indexOf(false) !== -1 ? 'lab' : null;
     if (!phase) {
-      statusEl.textContent = 'All eight steps done. Your design is running on the board.';
+      statusEl.textContent = 'All ' + TOTAL + ' steps done. Your design is running on the board.';
     } else {
       var idx = state.done[phase].indexOf(false);
-      statusEl.textContent = LABEL[phase] + ', step ' + (idx + 1) + ' of 4: ' + PHASES[phase][idx] + '.';
+      statusEl.textContent = LABEL[phase] + ', step ' + (idx + 1) + ' of ' + PHASES[phase].length + ': ' + PHASES[phase][idx] + '.';
     }
 
     renderBar();
@@ -994,14 +1019,14 @@
 
   Array.prototype.forEach.call(document.querySelectorAll('[data-reset]'), function (btn) {
     btn.addEventListener('click', function () {
-      state.done[btn.getAttribute('data-reset')] = blank();
+      state.done[btn.getAttribute('data-reset')] = blank(btn.getAttribute('data-reset'));
       renderProgress();
       save();
     });
   });
   document.getElementById('resetall').addEventListener('click', function () {
-    state.done.setup = blank();
-    state.done.lab = blank();
+    state.done.setup = blank('setup');
+    state.done.lab = blank('lab');
     renderProgress();
     save();
   });
@@ -1120,7 +1145,8 @@
     showText(finished ? 'donE' : CODE[s.ph] + (s.i + 1));
     sbTitle.textContent = cap(PHASES[s.ph][s.i]);
     // the readout already carries the phase, so drop to the short label when space is tight
-    sbSub.textContent = (window.innerWidth < 460 ? SHORT : LABEL)[s.ph] + ' \u00b7 step ' + (s.i + 1) + ' of 4';
+    sbSub.textContent = (window.innerWidth < 460 ? SHORT : LABEL)[s.ph] +
+      ' \u00b7 step ' + (s.i + 1) + ' of ' + PHASES[s.ph].length;
 
     if (!done) {
       sbBtn.textContent = 'Mark done';
@@ -1134,7 +1160,7 @@
     var nx = nextOpen(k);
     sbBtn.className = 'sb-btn ghost';
     if (nx < 0) {
-      sbBtn.textContent = 'All 8 done';
+      sbBtn.textContent = 'All ' + TOTAL + ' done';
       sbBtn.disabled = true;
       sbBtn.removeAttribute('aria-label');
     } else {
