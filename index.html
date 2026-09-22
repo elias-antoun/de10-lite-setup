@@ -928,6 +928,7 @@
   <p>Questions or problems? Get in touch.</p>
   <p>The pin assignments, signal polarity and board diagram on this page are taken from the <em>DE10-Lite User Manual</em> (Terasic, 17 October 2022). The DE10-Lite board, the Control Panel and the System Builder are made by Terasic; Quartus Prime and MAX 10 are Altera products. Redistributed here for coursework only.</p>
   <p><button class="btn-quiet" type="button" id="resetall">Reset all progress</button></p>
+  <p id="visit-notice" hidden>Visit logging is enabled: records your public IP, country, browser/device info, and visit details in private storage for 30 days.</p>
   <p class="copyright">&copy; 2026 Elias Antoun</p>
 </footer>
 
@@ -1334,6 +1335,65 @@
 })();
 </script>
 
+<script>
+(function () {
+  'use strict';
+  var endpoint = 'https://de10-lite-visits.eyantoun.workers.dev/visit';
+
+  var notice = document.getElementById('visit-notice');
+  if (notice) {
+    notice.hidden = false;
+  }
+
+  var path = (typeof location === 'object' && location && typeof location.pathname === 'string')
+    ? location.pathname.slice(0, 256)
+    : '/';
+
+  var language = null;
+  try {
+    if (typeof navigator === 'object' && navigator && typeof navigator.language === 'string') {
+      var lang = navigator.language.trim();
+      if (lang.length > 0) language = lang.slice(0, 64);
+    }
+  } catch (_) {}
+
+  var viewport_width = (typeof innerWidth === 'number' && Number.isInteger(innerWidth) && innerWidth > 0 && innerWidth <= 20000)
+    ? innerWidth : null;
+
+  var viewport_height = (typeof innerHeight === 'number' && Number.isInteger(innerHeight) && innerHeight > 0 && innerHeight <= 20000)
+    ? innerHeight : null;
+
+  var referrer = null;
+  try {
+    if (typeof document === 'object' && document && typeof document.referrer === 'string' && document.referrer.trim() !== '') {
+      var refUrl = new URL(document.referrer);
+      if ((refUrl.protocol === 'http:' || refUrl.protocol === 'https:') && refUrl.hostname) {
+        var host = refUrl.hostname.trim().toLowerCase().slice(0, 253);
+        if (host.length > 0) referrer = host;
+      }
+    }
+  } catch (_) {}
+
+  try {
+    var res = fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'omit',
+      keepalive: true,
+      body: JSON.stringify({
+        path: path,
+        language: language,
+        viewport_width: viewport_width,
+        viewport_height: viewport_height,
+        referrer: referrer
+      })
+    });
+    if (res && typeof res.catch === 'function') {
+      res.catch(function () {});
+    }
+  } catch (_) {}
+})();
+</script>
 <!-- Cloudflare Web Analytics -->
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "b46c673f437f4281af922e59faf29492"}'></script>
 <!-- End Cloudflare Web Analytics -->

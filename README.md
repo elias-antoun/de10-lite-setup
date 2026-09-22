@@ -166,10 +166,17 @@ owners.
 newest release. To publish a new zip, draft a release and attach the file under
 that exact name — the link never changes and old releases stay available.
 
-**Editing the page.** Everything is in `index.html`: no build step, no
-dependencies. `board.png` is the diagram. `.nojekyll` tells Pages to serve files
+**Editing the page.** The guide's markup, styles, and workflow are in
+`index.html`: no build step is required. `img/board.png` is the diagram.
+`.nojekyll` tells Pages to serve files
 as-is rather than running them through Jekyll. Commit and Pages redeploys within
 a minute.
+
+**Private visit logs.** Optional IP and device logging uses a separate Cloudflare
+Worker and D1 database. It is disabled until an endpoint is configured. See the
+[analytics setup guide](analytics/README.md) for deployment and private viewing.
+The website needs no build step; Node dependencies are only for the analytics
+backend's development and deployment tools.
 
 **Reusing the page for another lab.** Nothing is hard-coded to the adder. A
 student changes *Project name* at the top of the page and every path, filename
