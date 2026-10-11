@@ -172,11 +172,13 @@ that exact name — the link never changes and old releases stay available.
 as-is rather than running them through Jekyll. Commit and Pages redeploys within
 a minute.
 
-**Private visit logs.** Optional IP and device logging uses a separate Cloudflare
-Worker and D1 database. It is disabled until an endpoint is configured. See the
-[analytics setup guide](analytics/README.md) for deployment and private viewing.
-The website needs no build step; Node dependencies are only for the analytics
-backend's development and deployment tools.
+**Private visit logs.** `visit-log.js` sends each page load to a Cloudflare
+Worker that stores it in a D1 database for 30 days: IP, network provider,
+country, browser and device, an anonymous ID kept in the browser, how many guide
+steps that browser has ticked, the link it came from (`?src=…`) and load time.
+The footer notice says so, and `?notrack` turns logging off for a browser
+(`?track` turns it back on). The Worker's source is kept outside this
+repository. The website itself still needs no build step.
 
 **Reusing the page for another lab.** Nothing is hard-coded to the adder. A
 student changes *Project name* at the top of the page and every path, filename
