@@ -176,9 +176,8 @@ a minute.
 Worker that stores it in a D1 database for 30 days: IP, network provider,
 country, browser and device, an anonymous ID kept in the browser, how many guide
 steps that browser has ticked, the link it came from (`?src=…`) and load time.
-The footer notice says so, and `?notrack` turns logging off for a browser
-(`?track` turns it back on). The Worker's source is kept outside this
-repository. The website itself still needs no build step.
+`?notrack` turns logging off for a browser (`?track` turns it back on). The
+Worker's source is kept outside this repository. The website itself still needs no build step.
 
 **Reusing the page for another lab.** Nothing is hard-coded to the adder. A
 student changes *Project name* at the top of the page and every path, filename
